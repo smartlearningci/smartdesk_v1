@@ -6,6 +6,8 @@ Os principais intervenientes do SmartDesk são os colaboradores da NexaServ, os 
 
 Para compreender as suas necessidades, foram definidas três personas representativas dos perfis de utilização.
 
+Todos os utilizadores acedem com email e palavra-passe próprios do SmartDesk.
+
 ## 2.2. Persona 1 — Ana Martins
 
 **Idade:** 32 anos  
@@ -23,9 +25,10 @@ Comunicar problemas informáticos de forma simples e acompanhar a sua resoluçã
 2. Tem dificuldade em saber quando o problema ficará resolvido.
 
 **Necessidades na aplicação:**
-1. Criar tickets com uma descrição do problema e respetiva categoria.
-2. Consultar o estado dos seus tickets.
-3. Consultar a informação de resolução dos pedidos.
+1. Iniciar e terminar sessão com as suas credenciais.
+2. Criar tickets com uma descrição do problema e respetiva categoria.
+3. Consultar exclusivamente o estado dos seus tickets.
+4. Consultar a informação de resolução dos pedidos.
 
 ## 2.3. Persona 2 — Miguel Costa
 
@@ -44,9 +47,11 @@ Organizar os pedidos que lhe são atribuídos e acompanhar o trabalho até à re
 2. Nem sempre é claro quais os pedidos que estão sob a sua responsabilidade.
 
 **Necessidades na aplicação:**
-1. Consultar os tickets que lhe foram atribuídos.
-2. Atualizar o estado dos tickets durante o tratamento.
-3. Registar a resolução dos problemas.
+1. Iniciar e terminar sessão.
+2. Consultar os tickets atualmente atribuídos.
+3. Atualizar o estado dos tickets durante o tratamento.
+4. Registar a resolução e retomar tickets Resolvidos quando necessário.
+5. Deixar de poder tratar tickets reatribuídos a outro técnico.
 
 ## 2.4. Persona 3 — Sofia Almeida
 
@@ -65,24 +70,26 @@ Garantir a organização dos pedidos, a distribuição do trabalho e o acompanha
 2. Tem dificuldade em acompanhar a distribuição e o progresso do trabalho dos técnicos.
 
 **Necessidades na aplicação:**
-1. Consultar todos os tickets e respetivos estados.
-2. Atribuir tickets aos técnicos de suporte.
-3. Acompanhar os tickets por técnico e por estado.
+1. Iniciar e terminar sessão.
+2. Consultar todos os tickets e respetivos estados.
+3. Atribuir e reatribuir tickets ainda não fechados aos técnicos de suporte.
+4. Acompanhar os tickets por técnico e por estado.
+5. Consultar históricos de estados e técnicos.
+6. Fechar tickets Resolvidos.
 
 ## 2.5. Relação entre personas e funcionalidades
 
 | Persona | Perfil | Funcionalidades necessárias |
 |---|---|---|
-| Ana Martins | Colaborador | Criar tickets; consultar os próprios tickets e respetivos estados; consultar a resolução. |
-| Miguel Costa | Técnico de suporte | Consultar tickets atribuídos; atualizar estados; registar resoluções. |
-| Sofia Almeida | Responsável de TI | Consultar todos os tickets; atribuir tickets aos técnicos; acompanhar tickets por técnico e estado. |
+| Ana Martins | Colaborador | Autenticar-se; criar tickets; consultar exclusivamente os próprios tickets, estados e resoluções. |
+| Miguel Costa | Técnico de suporte | Autenticar-se; consultar tickets atualmente atribuídos; iniciar, retomar e resolver tratamento. |
+| Sofia Almeida | Responsável de TI | Autenticar-se; consultar todos os tickets; atribuir e reatribuir; consultar históricos; fechar tickets Resolvidos. |
 
-## 2.6. Questões a decidir
+## 2.6. Regras comuns
 
-As seguintes regras deverão ser esclarecidas nas próximas etapas:
-
-1. Quem pode fechar um ticket depois de resolvido?
-2. Os técnicos podem reatribuir tickets ou essa operação pertence exclusivamente à responsável de TI?
-3. Que informação deve ficar visível ao colaborador durante o tratamento do pedido?
-
-Estas decisões não alteram os três perfis definidos nem o âmbito da primeira versão do SmartDesk.
+- Cada utilizador tem credenciais próprias e um perfil associado.
+- Apenas utilizadores autenticados acedem às funcionalidades internas.
+- O Colaborador consulta apenas os seus pedidos.
+- O Técnico trata apenas tickets atualmente atribuídos.
+- Apenas a Responsável de TI atribui, reatribui e fecha tickets.
+- Reatribuir não altera o estado; tickets Fechados não podem ser reatribuídos ou reabertos.

@@ -78,8 +78,24 @@ Funcionalidade: Gestão de tickets SmartDesk
     Dado que Sofia Almeida acedeu como Responsável de TI
     E existem alterações de estado num ticket
     Quando consulta o histórico desse ticket
-    Então visualiza as transições realizadas
+    Então visualiza as alterações de estado e de técnico
     E visualiza a data e o utilizador de cada alteração
+    E nas reatribuições visualiza os técnicos anterior e novo
+
+  Cenário: US-011 - Iniciar sessão
+    Dado que Ana Martins tem uma conta ativa
+    E está associada ao perfil "Colaborador"
+    Quando introduz o email e a palavra-passe corretos
+    Então o sistema autentica Ana Martins
+    E permite o acesso às funcionalidades do seu perfil
+
+  Cenário: US-012 - Reatribuir um ticket
+    Dado que Sofia Almeida iniciou sessão como Responsável de TI
+    E existe um ticket "Em tratamento" atribuído a Miguel Costa
+    Quando Sofia atribui o ticket a outro técnico
+    Então o novo técnico passa a ser responsável pelo ticket
+    E o estado permanece "Em tratamento"
+    E a reatribuição fica registada no histórico
 
   # ==========================================
   # REGRAS DE TRANSIÇÃO
@@ -187,11 +203,16 @@ Funcionalidade: Gestão de tickets SmartDesk
     Então visualiza apenas os tickets que cumprem
     ambos os critérios
 
-  Cenário: RT-012 - Utilizar num navegador web
-    Dado que existe um navegador web suportado
-    Quando um utilizador acede ao SmartDesk
-    Então a aplicação funciona nesse navegador
+  Esquema do Cenário: RT-012 - Utilizar no Chrome e Edge
+    Dado que o utilizador dispõe do navegador "<navegador>"
+    Quando acede ao SmartDesk
+    Então consegue iniciar sessão e utilizar a aplicação
     E não exige instalação de software adicional
+
+    Exemplos:
+      | navegador      |
+      | Google Chrome  |
+      | Microsoft Edge |
 
   Cenário: RT-013 - Verificar clareza da interface
     Dado que um colaborador participa num teste de utilização
@@ -251,3 +272,54 @@ Funcionalidade: Gestão de tickets SmartDesk
       | Colaborador        | Aberto        |
       | Técnico de suporte | Em tratamento |
       | Responsável de TI  | Resolvido     |
+
+  # AUTENTICAÇÃO
+
+  Cenário: RT-019 - Rejeitar credenciais incorretas
+    Dado que Ana Martins está na página de início de sessão
+    Quando introduz uma palavra-passe incorreta
+    Então o sistema impede o acesso
+    E apresenta uma mensagem de autenticação inválida
+
+  Cenário: RT-020 - Terminar sessão
+    Dado que Ana Martins iniciou sessão no SmartDesk
+    Quando termina a sessão
+    Então o sistema encerra a sessão autenticada
+    E impede o acesso às funcionalidades internas até novo início de sessão
+
+  # REATRIBUIÇÃO
+
+  Esquema do Cenário: RT-021 - Reatribuir nos estados permitidos
+    Dado que Sofia Almeida iniciou sessão como Responsável de TI
+    E existe um ticket no estado "<estado>" atribuído a Miguel Costa
+    Quando Sofia reatribui o ticket a outro técnico
+    Então o novo técnico fica responsável pelo ticket
+    E o estado permanece "<estado>"
+    E a alteração fica registada no histórico
+
+    Exemplos:
+      | estado        |
+      | Aberto        |
+      | Em tratamento |
+      | Resolvido     |
+
+  Cenário: RT-022 - Impedir reatribuição de ticket fechado
+    Dado que Sofia Almeida iniciou sessão como Responsável de TI
+    E existe um ticket no estado "Fechado"
+    Quando tenta reatribuir o ticket a outro técnico
+    Então o sistema rejeita a operação
+    E mantém o técnico anteriormente atribuído
+    E mantém o estado "Fechado"
+
+  Esquema do Cenário: RT-023 - Impedir tratamento após reatribuição
+    Dado que Sofia Almeida reatribuiu a outro técnico um ticket anteriormente atribuído a Miguel Costa
+    E o ticket está no estado "<estado>"
+    Quando Miguel tenta executar "<operacao>"
+    Então o sistema rejeita a operação
+    E mantém o estado "<estado>"
+
+    Exemplos:
+      | estado        | operacao           |
+      | Aberto        | iniciar tratamento |
+      | Em tratamento | registar resolução |
+      | Resolvido     | retomar tratamento |
