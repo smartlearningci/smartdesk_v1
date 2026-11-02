@@ -18,7 +18,7 @@ O SmartDesk terá exatamente três perfis:
 |---|---|---|
 | Colaborador | Ana Martins | Criar tickets; consultar os próprios tickets, estados e resoluções. |
 | Técnico de suporte | Miguel Costa | Consultar os tickets atribuídos; iniciar e retomar o tratamento; registar resoluções. |
-| Responsável de TI | Sofia Almeida | Consultar todos os tickets; atribuir tickets aos técnicos; acompanhar os estados; fechar tickets resolvidos; consultar históricos. |
+| Responsável de TI | Sofia Almeida | Consultar todos os tickets; atribuir e reatribuir técnicos em tickets não fechados; acompanhar os estados; fechar tickets Resolvidos; consultar históricos. |
 
 Cada utilizador terá uma conta individual, autenticada por email e palavra-passe próprios do SmartDesk, e um perfil associado.
 

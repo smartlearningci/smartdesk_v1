@@ -95,59 +95,27 @@ Apenas a Responsável de TI executa o fecho.
 
 ## 3.5. Fluxograma do processo
 
-```text
-        ┌───────────────────────────┐
-        │ Ana cria ticket           │
-        │ Estado: ABERTO            │
-        └─────────────┬─────────────┘
-                      │
-                      ▼
-        ┌───────────────────────────┐
-        │ Sofia atribui o ticket    │
-        │ a Miguel                  │
-        └─────────────┬─────────────┘
-                      │
-                      ▼
-             ┌─────────────────┐
-             │ Foi atribuído?  │
-             └───────┬─────────┘
-                     │
-             Não ◄───┴───► Sim
-              │             │
-              ▼             ▼
-       Aguarda         Miguel inicia
-       atribuição      o tratamento
-                            │
-                            ▼
-                    ┌────────────────┐
-                    │ EM TRATAMENTO  │◄──────┐
-                    └───────┬────────┘       │
-                            │                │
-                            ▼                │
-                    ┌────────────────┐       │
-                    │ Problema       │       │
-                    │ resolvido?     │       │
-                    └───────┬────────┘       │
-                            │                │
-                     Não ───┴────────────────┘
-                            │ Sim
-                            ▼
-                    ┌────────────────┐
-                    │ RESOLVIDO      │
-                    └───────┬────────┘
-                            │
-                            ▼
-                    ┌────────────────┐
-                    │ Pode fechar?   │
-                    └───────┬────────┘
-                            │
-                     Não ───┤ (aguarda)
-                            │ Sim
-                            ▼
-                    ┌────────────────┐
-                    │ FECHADO        │
-                    └────────────────┘
+```mermaid
+flowchart TD
+    A["Ana autentica-se e cria ticket"] --> B["Aberto"]
+    B --> C{"Técnico atribuído?"}
+    C -- "Não" --> D["Aguarda atribuição por Sofia"]
+    D --> C
+    C -- "Sim" --> E["Técnico inicia tratamento"]
+    E --> F["Em tratamento"]
+    F --> G{"Problema resolvido?"}
+    G -- "Não" --> F
+    G -- "Sim: regista solução" --> H["Resolvido"]
+    H --> I{"Problema persiste?"}
+    I -- "Sim: técnico retoma" --> F
+    I -- "Não: Sofia fecha" --> J["Fechado"]
+    B -. "Sofia pode reatribuir" .-> R["Alteração de técnico, sem mudar estado"]
+    F -. "Sofia pode reatribuir" .-> R
+    H -. "Sofia pode reatribuir" .-> R
+    R -. "Regista histórico e atualiza permissões" .-> K["Mantém o estado de origem"]
 ```
+
+A reatribuição é permitida em **Aberto**, **Em tratamento** e **Resolvido**, sem alterar o estado. O técnico anterior perde as permissões de tratamento e a mudança fica registada no histórico. Em **Fechado**, a reatribuição é proibida. O regresso de **Resolvido** a **Em tratamento** só pode ser efetuado pelo técnico atualmente atribuído. Apenas Sofia fecha tickets Resolvidos.
 
 ## 3.6. Regras consolidadas
 

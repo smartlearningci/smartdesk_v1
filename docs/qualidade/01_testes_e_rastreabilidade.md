@@ -48,6 +48,24 @@ Os testes serão preparados e executados durante a implementação. Nesta fase, 
 
 Nos testes de operações rejeitadas, será também verificado que os dados permanecem inalterados.
 
+### Critério mensurável de RNF-002 — Teste T-21
+
+O teste de facilidade de utilização será realizado com **5 participantes representativos do perfil Colaborador**, sem formação prévia nem ajuda durante a execução.
+
+Cada participante deverá, numa única sessão de teste:
+
+1. Iniciar sessão.
+2. Criar um ticket com título, descrição e categoria.
+3. Consultar o ticket criado e identificar corretamente o respetivo estado.
+
+**Tempo máximo:** 5 minutos para completar as três tarefas, contado desde o início da primeira tarefa até à conclusão da terceira.
+
+**Critério de aprovação:** pelo menos **4 dos 5 participantes (80%)** concluem corretamente todas as tarefas, dentro dos 5 minutos e sem intervenção do avaliador.
+
+Para cada participante serão registados o tempo total, as tarefas concluídas, os erros e a eventual necessidade de ajuda. Qualquer participante que ultrapasse o tempo, precise de ajuda ou não conclua corretamente uma tarefa não conta como sucesso.
+
+Este critério concretiza o RNF-002 sem introduzir novas funcionalidades.
+
 ## 6.4. Matriz de rastreabilidade das User Stories
 
 | User Story | Requisitos | Testes |
