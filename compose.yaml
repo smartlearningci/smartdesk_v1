@@ -1,19 +1,32 @@
-# Um único serviço web; SQLite está dentro da aplicação, não noutro contentor.
+# Serviço principal: aplicação web SmartDesk e base SQLite persistente.
 services:
   app:
     build: .
-    # Só o próprio computador pode aceder à porta publicada.
     ports:
       - "127.0.0.1:8080:8000"
     environment:
-      # A base de dados fica fora do sistema de ficheiros descartável do contentor.
       SMARTDESK_DB: /data/smartdesk.sqlite3
-      # Compose lê o segredo do .env local; nunca o escrever neste ficheiro.
       SMARTDESK_SESSION_SECRET: ${SMARTDESK_SESSION_SECRET:?Defina SMARTDESK_SESSION_SECRET no ficheiro .env}
     volumes:
       - smartdesk_data:/data
     restart: unless-stopped
 
-# Este volume mantém os dados quando o contentor é recriado.
+  # Serviço de testes: usa a mesma imagem, sem publicar portas e sem tocar na BD da demo.
+  # docker compose run --rm tests
+  tests:
+    build: .
+    profiles: ["test"]
+    # Valor fictício apenas para a importação da aplicação nos testes.
+    environment:
+      SMARTDESK_SESSION_SECRET: "smartdesk-testes-locais-chave-com-32-caracteres"
+    # Pasta do computador partilhada para guardar XML, HTML e JSON.
+    # Criar antes com: mkdir -p reports
+    volumes:
+      - ./reports:/app/reports
+    # Permite escrever os relatórios como o utilizador do computador (Linux).
+    # Em Windows/macOS, os valores predefinidos são suficientes na maioria dos casos.
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    command: ["python", "-m", "scripts.run_tests"]
+
 volumes:
   smartdesk_data:
