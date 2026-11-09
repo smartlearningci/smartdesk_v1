@@ -1,3 +1,5 @@
+> **Versão atual: V2 PostgreSQL.** Para preparar o ambiente, seguir a secção [SmartDesk V2 — PostgreSQL local](#smartdesk-v2--postgresql-local). As instruções SQLite abaixo são históricas.
+
 # SmartDesk — Sistema de Gestão de Pedidos de Suporte
 
 Projeto pedagógico da NexaServ (60 colaboradores, equipa de TI com três técnicos e uma responsável). O MVP transforma a [especificação aprovada](docs/produto/03_mvp_backlog_e_aceitacao.md) numa aplicação local com **Python, FastAPI, HTML e SQLite**.
@@ -149,3 +151,80 @@ Os testes têm objetivos e referências RF/US/T nos respetivos ficheiros. Cobrem
 Esta aplicação destina-se a uma demonstração **local**, não a produção. Os formulários não dispõem ainda de proteção CSRF e o cookie de sessão não está configurado para HTTPS obrigatório; **não expor à Internet**. As condições de medição de desempenho serão definidas antes do T-11.
 
 Depois da validação integral, a formação prosseguirá para Docker, Compose, CI/CD e cloud, sem acrescentar funcionalidades de negócio ao MVP.
+
+
+## SmartDesk V2 — PostgreSQL local
+
+A V2 utiliza PostgreSQL no serviço `db` do Docker Compose e um volume
+persistente `postgres_data`. A interface, a API e as regras mantêm-se.
+As instruções SQLite anteriores descrevem a V1 histórica.
+
+### Atualizar a pasta local
+
+```bash
+cd smartdesk_v1
+git pull --ff-only origin main
+```
+
+### Configurar e arrancar pela primeira vez
+
+```bash
+cp .env.example .env
+# Editar .env: substituir POSTGRES_PASSWORD e SMARTDESK_SESSION_SECRET.
+mkdir -p reports
+docker compose build
+docker compose up -d db
+docker compose run --rm -it app python -m scripts.create_demo_users
+docker compose up -d app
+docker compose ps
+```
+
+O script solicita palavras-passe (mínimo oito caracteres) para Ana,
+Miguel e Sofia. O PostgreSQL guarda utilizadores e tickets no volume
+`postgres_data`. O `db` não publica portas no computador.
+Abrir `http://localhost:8080/login`.
+
+### Testes e relatórios
+
+```bash
+docker compose run --rm tests
+```
+
+Em Linux, se o utilizador local não tiver UID/GID 1000:
+
+```bash
+LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" docker compose run --rm tests
+```
+
+Abrir `reports/relatorio_global.html`. O conjunto `postgres` verifica
+criação, leitura, atualização e persistência entre ligações, usando
+exclusivamente a base `smartdesk_test`. Os conjuntos antigos continuam
+a usar SQLite temporário, para regressão. Os passos Gherkin, T-11 e T-12
+continuam pendentes de ensaio específico.
+
+### Verificar persistência após reinício
+
+Criar um ticket pela interface e anotar o ID. Depois:
+
+```bash
+docker compose restart app db
+docker compose ps
+```
+
+Voltar a iniciar sessão e verificar que o ticket mantém o estado.
+O ensaio deve ser registado manualmente; não é validado automaticamente
+pela suíte PostgreSQL.
+
+### Parar e voltar a arrancar
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+`docker compose down` conserva o volume e os tickets.
+**Não usar `docker compose down -v`**, pois elimina os dados persistentes.
+
+O volume SQLite `smartdesk_data` anterior não é eliminado.
+Não há migração automática dos tickets da V1 para PostgreSQL.
+Ver `docs/arquitetura/02_postgresql_compose.md`.
