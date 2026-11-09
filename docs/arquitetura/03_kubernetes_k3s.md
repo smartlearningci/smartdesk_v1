@@ -25,17 +25,28 @@ Substituir `SUBSTITUIR_PELO_IP_REAL_DO_DB` no primeiro manifesto. O IP pode muda
 ## Imagem
 ```bash
 docker build -t smartdesk:k3s-lab .
-docker save smartdesk:k3s-lab | docker exec -i smartlearning-k3s k3s ctr images import -
-docker exec smartlearning-k3s k3s ctr images list
+docker save smartdesk:k3s-lab | docker exec -i smartlearning-k3s ctr -n k8s.io images import -
+docker compose -f compose.k3s.yaml exec k3s ctr -n k8s.io images list
 ```
 A imagem no manifesto e `docker.io/library/smartdesk:k3s-lab`, com `imagePullPolicy: Never`. Confirmar que aparece no containerd do k3s antes do Deployment.
+
+## Compatibilidade e pré-validação
+
+A imagem importada tem de ficar no namespace containerd `k8s.io`, utilizado pelo Kubernetes. O Docker Compose de base não publica a porta PostgreSQL no anfitrião, e o hostname `db` não é resolvido automaticamente dentro dos pods. A rede de pods do k3s pode não conseguir alcançar o IP do contentor Docker, especialmente em Docker Desktop/Windows. Confirmar a conectividade a partir de um pod **antes** de criar o Deployment; não há garantia universal de acesso apenas com `docker network connect`.
+
+O primeiro YAML contém deliberadamente o marcador `SUBSTITUIR_PELO_IP_REAL_DO_DB`, que deve ser substituído pelo IPv4 obtido no computador antes de aplicar. Não aplicar o manifesto com o marcador. Para Windows PowerShell, consultar a rede sem sintaxe Bash:
+```powershell
+$dbid = docker compose ps -q db
+docker inspect $dbid --format '{{json .NetworkSettings.Networks}}'
+```
+Depois de identificar o IP, editar apenas a cópia local do YAML. O endpoint é sensível à recriação do contentor PostgreSQL. Em caso de falha de conectividade no Linux ou Windows, parar a demonstração e rever a rede antes de avançar.
 
 ## Secret local
 Criar o Secret no k3s, com valores recolhidos localmente do ambiente ja configurado, **sem colocar valores reais em ficheiros versionados**. A URL deve apontar para `postgres-compose:5432` e para a base existente; reutilizar a mesma chave de sessao do Compose. Evitar colocar passwords em historico de shell, logs ou screenshots. O comando Kubernetes usa sempre:
 ```bash
 docker compose -f compose.k3s.yaml exec k3s kubectl ...
 ```
-Por exemplo, depois de preparar os valores num ambiente seguro dentro do contentor k3s:
+Por exemplo, depois de preparar os valores num ambiente seguro dentro do contentor k3s (não inserir segredos na linha de comandos do anfitrião):
 ```bash
 kubectl create secret generic smartdesk-db --from-literal=DATABASE_URL="$DATABASE_URL" --from-literal=SMARTDESK_SESSION_SECRET="$SMARTDESK_SESSION_SECRET"
 ```
@@ -69,3 +80,9 @@ docker compose -f compose.k3s.yaml exec k3s kubectl rollout status deployment/sm
 
 ## Limites
 Nao foram executados testes Kubernetes nem de conectividade nesta proposta. `src/services.py` faz verificacao e atualizacao de estado em passos distintos; concorrencia entre varias replicas nao esta validada. `initialize(db)` corre no arranque; inicializacao simultanea numa BD vazia nao foi validada. Nao expor este laboratorio a redes externas.
+
+## Verificações de segurança e de execução
+- Os dois YAML de `k8s/` não incluem passwords, tokens, `.env` ou kubeconfig.
+- `kubectl apply --dry-run=client -f /tmp/02_smartdesk.yaml` valida o manifesto, mas não prova conectividade à BD.
+- `kubectl get pods` e `kubectl logs deployment/smartdesk` ajudam a diagnosticar o arranque; não partilhar logs que contenham segredos.
+- A demonstração de criação e recuperação do mesmo ticket após reinício do pod é obrigatória antes de considerar três réplicas.
