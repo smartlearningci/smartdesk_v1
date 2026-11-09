@@ -1,0 +1,16 @@
+services:
+  k3s:
+    image: rancher/k3s:v1.31.5-k3s1
+    container_name: smartlearning-k3s
+    privileged: true
+    command: server --disable=traefik --disable=servicelb --write-kubeconfig-mode=644
+    ports:
+      - "127.0.0.1:8088:8088"  # Nginx
+      - "127.0.0.1:8089:8089"  # SmartDesk (Notebook 09)
+      - "127.0.0.1:8090:8090"  # Headlamp (painel Kubernetes)
+    volumes:
+      - k3s-server:/var/lib/rancher/k3s
+      - ./headlamp-lab.yaml:/lab/headlamp-lab.yaml:ro
+    restart: unless-stopped
+volumes:
+  k3s-server:
