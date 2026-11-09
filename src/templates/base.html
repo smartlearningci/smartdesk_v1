@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartDesk</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><header><h1>SmartDesk</h1>
+{% if user %}<nav><a href="/tickets">Tickets</a>
+{% if user.role == "colaborador" %}<a href="/tickets/new">Novo ticket</a>{% endif %}
+<span>{{ user.name }}</span><form action="/logout" method="post"><button>Sair</button></form></nav>{% endif %}
+</header><main>{% block content %}{% endblock %}</main></body></html>

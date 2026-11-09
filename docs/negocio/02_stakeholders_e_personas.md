@@ -1,95 +1,66 @@
-# 2. Stakeholders e Personas
+# Passo 2 — Stakeholders e Personas do SmartDesk
 
-## 2.1. Stakeholders
+**Objetivo:** Identificar os três utilizadores principais do SmartDesk, compreender as suas dificuldades e determinar as funcionalidades necessárias.
 
-Os principais intervenientes do SmartDesk são os colaboradores da NexaServ, os técnicos de suporte e a responsável de TI.
+## 1. Ana Martins — Colaboradora
 
-Para compreender as suas necessidades, foram definidas três personas representativas dos perfis de utilização.
+- **Idade:** 32 anos
+- **Função:** Assistente administrativa
+- **Contexto:** Trabalha na área administrativa da NexaServ e necessita de apoio informático para realizar as suas tarefas.
 
-Todos os utilizadores acedem com email e palavra-passe próprios do SmartDesk.
-
-## 2.2. Persona 1 — Ana Martins
-
-**Idade:** 32 anos  
-**Função:** Assistente administrativa  
-**Perfil:** Colaborador
-
-**Contexto de trabalho:**  
-A Ana trabalha no departamento administrativo da NexaServ e utiliza diariamente equipamentos e aplicações informáticas. Quando surge um problema, contacta a equipa de TI.
-
-**Objetivo:**  
-Comunicar problemas informáticos de forma simples e acompanhar a sua resolução.
+**Objetivo:** Comunicar problemas informáticos e acompanhar a sua resolução sem ter de contactar repetidamente a equipa de TI.
 
 **Dificuldades atuais:**
-1. Não sabe se o seu pedido foi recebido ou registado.
-2. Tem dificuldade em saber quando o problema ficará resolvido.
+- Não sabe se o seu pedido foi recebido e registado.
+- Tem dificuldade em saber quando o problema estará resolvido.
 
 **Necessidades na aplicação:**
-1. Iniciar e terminar sessão com as suas credenciais.
-2. Criar tickets com uma descrição do problema e respetiva categoria.
-3. Consultar exclusivamente o estado dos seus tickets.
-4. Consultar a informação de resolução dos pedidos.
+1. Criar tickets com descrição do problema e categoria.
+2. Consultar os seus pedidos e respetivos estados.
+3. Consultar a informação sobre a resolução.
 
-## 2.3. Persona 2 — Miguel Costa
+## 2. Miguel Costa — Técnico de suporte
 
-**Idade:** 29 anos  
-**Função:** Técnico de suporte  
-**Perfil:** Técnico de suporte
+- **Idade:** 29 anos
+- **Função:** Técnico de suporte
+- **Contexto:** Integra a equipa de três técnicos de TI da NexaServ e resolve problemas informáticos comunicados pelos colaboradores.
 
-**Contexto de trabalho:**  
-O Miguel integra a equipa de TI da NexaServ. Recebe pedidos de diferentes departamentos e presta apoio na resolução de problemas de equipamento, software e acessos.
-
-**Objetivo:**  
-Organizar os pedidos que lhe são atribuídos e acompanhar o trabalho até à resolução.
+**Objetivo:** Organizar os pedidos atribuídos e acompanhar o trabalho até à resolução.
 
 **Dificuldades atuais:**
-1. Os pedidos chegam por diferentes canais e nem sempre estão organizados.
-2. Nem sempre é claro quais os pedidos que estão sob a sua responsabilidade.
+- Os pedidos estão dispersos por emails e mensagens.
+- Nem sempre é claro quais os pedidos que lhe foram atribuídos.
 
 **Necessidades na aplicação:**
-1. Iniciar e terminar sessão.
-2. Consultar os tickets atualmente atribuídos.
-3. Atualizar o estado dos tickets durante o tratamento.
-4. Registar a resolução e retomar tickets Resolvidos quando necessário.
-5. Deixar de poder tratar tickets reatribuídos a outro técnico.
+1. Consultar os tickets que lhe estão atribuídos.
+2. Atualizar o estado dos tickets durante o tratamento.
+3. Registar a resolução e marcar os tickets como resolvidos.
 
-## 2.4. Persona 3 — Sofia Almeida
+## 3. Sofia Almeida — Responsável de TI
 
-**Idade:** 43 anos  
-**Função:** Responsável de TI  
-**Perfil:** Responsável de TI
+- **Idade:** 43 anos
+- **Função:** Responsável de TI
+- **Contexto:** Coordena os três técnicos de suporte e supervisiona os pedidos informáticos dos colaboradores da NexaServ.
 
-**Contexto de trabalho:**  
-A Sofia coordena os três técnicos da equipa de TI da NexaServ e acompanha os pedidos de suporte dos diferentes departamentos.
-
-**Objetivo:**  
-Garantir a organização dos pedidos, a distribuição do trabalho e o acompanhamento da sua resolução.
+**Objetivo:** Garantir que os pedidos são atribuídos, acompanhados e resolvidos de forma organizada.
 
 **Dificuldades atuais:**
-1. Não dispõe de uma visão centralizada dos pedidos existentes.
-2. Tem dificuldade em acompanhar a distribuição e o progresso do trabalho dos técnicos.
+- Não dispõe de uma visão centralizada do trabalho da equipa.
+- Tem dificuldade em acompanhar as atribuições e os pedidos pendentes.
 
 **Necessidades na aplicação:**
-1. Iniciar e terminar sessão.
-2. Consultar todos os tickets e respetivos estados.
-3. Atribuir e reatribuir tickets ainda não fechados aos técnicos de suporte.
-4. Acompanhar os tickets por técnico e por estado.
-5. Consultar históricos de estados e técnicos.
-6. Fechar tickets Resolvidos.
+1. Consultar todos os tickets e respetivos estados.
+2. Atribuir e reatribuir tickets aos técnicos.
+3. Acompanhar as resoluções e gerir o fecho dos tickets.
 
-## 2.5. Relação entre personas e funcionalidades
+## 4. Relação entre personas e funcionalidades
 
-| Persona | Perfil | Funcionalidades necessárias |
-|---|---|---|
-| Ana Martins | Colaborador | Autenticar-se; criar tickets; consultar exclusivamente os próprios tickets, estados e resoluções. |
-| Miguel Costa | Técnico de suporte | Autenticar-se; consultar tickets atualmente atribuídos; iniciar, retomar e resolver tratamento. |
-| Sofia Almeida | Responsável de TI | Autenticar-se; consultar todos os tickets; atribuir e reatribuir; consultar históricos; fechar tickets Resolvidos. |
+| Persona | Funcionalidades necessárias |
+|---|---|
+| **Ana Martins** — Colaboradora | Criar tickets; consultar os próprios tickets; acompanhar estados e resoluções. |
+| **Miguel Costa** — Técnico de suporte | Consultar tickets atribuídos; atualizar estados; registar resoluções. |
+| **Sofia Almeida** — Responsável de TI | Consultar todos os tickets; atribuir e reatribuir técnicos; supervisionar resoluções e gerir fechos. |
 
-## 2.6. Regras comuns
+## 5. Pontos para decisões posteriores
 
-- Cada utilizador tem credenciais próprias e um perfil associado.
-- Apenas utilizadores autenticados acedem às funcionalidades internas.
-- O Colaborador consulta apenas os seus pedidos.
-- O Técnico trata apenas tickets atualmente atribuídos.
-- Apenas a Responsável de TI atribui, reatribui e fecha tickets.
-- Reatribuir não altera o estado; tickets Fechados não podem ser reatribuídos ou reabertos.
+As personas permitem identificar necessidades, mas ainda será necessário detalhar as regras de permissões, a informação obrigatória dos tickets e as condições para alterar os seus estados. Essas decisões serão tratadas nas etapas de requisitos.

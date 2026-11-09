@@ -1,116 +1,86 @@
-# 6. Arquitetura Inicial do SmartDesk
+# Passo 6 — Arquitetura inicial do SmartDesk
 
-## 6.1. Objetivo
+**Estado:** Proposta aprovada. **Âmbito:** MVP com 12 User Stories, três perfis, três categorias e quatro estados.
 
-Definir uma arquitetura simples para implementar o MVP do SmartDesk, suportando as 12 User Stories e os requisitos aprovados.
+## 1. Arquitetura proposta
 
-## 6.2. Visão geral
-
-O SmartDesk utilizará uma arquitetura de três camadas:
+Aplicação web simples com três componentes lógicos:
 
 ```text
-Utilizadores (Chrome / Edge)
-             |
-             v
-          Frontend
-             |
-        API HTTPS/JSON
-             |
-             v
-          Backend
-             |
-             v
-        Base de dados
+┌─────────────────────────────────────────────────────────────┐
+│ FRONTEND — Interface web (Ana, Miguel e Sofia)              │
+│ Formulários, listas, estados e ações permitidas             │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ Pedidos e respostas HTTP
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ BACKEND — Regras do SmartDesk                                │
+│ Autenticação, permissões, gestão de tickets, validações     │
+│ e transições de estado                                      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ Leitura e gravação
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ BASE DE DADOS                                               │
+│ Utilizadores, tickets, atribuições e resoluções             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-O frontend comunica com o backend através de uma API. Apenas o backend acede diretamente à base de dados.
+## 2. Papel de cada componente
 
-## 6.3. Componentes e responsabilidades
-
-### Frontend
-
-Interface web utilizada pelos três perfis do SmartDesk.
-
-Responsabilidades:
-
-- Apresentar a página de autenticação.
-- Permitir criar e consultar tickets.
-- Apresentar os estados e as resoluções.
-- Disponibilizar as operações de atribuição e reatribuição.
-- Apresentar o histórico.
-- Permitir terminar sessão.
-- Apresentar mensagens de erro e validação.
-
-Deve funcionar no Google Chrome e Microsoft Edge.
-
-O frontend pode adaptar a interface ao perfil, mas não é responsável por garantir as permissões.
-
-### Backend
-
-Aplicação central responsável pelas regras de negócio.
-
-Responsabilidades:
-
-- Autenticar utilizadores por email e palavra-passe.
-- Gerir sessões e verificar permissões.
-- Criar e consultar tickets.
-- Atribuir e reatribuir técnicos.
-- Validar transições de estado.
-- Exigir uma solução para resolver tickets.
-- Impedir alterações não autorizadas.
-- Registar históricos.
-- Comunicar com a base de dados.
-
-A autorização deve ser verificada em cada operação no backend.
-
-### Base de dados
-
-Armazena de forma persistente:
-
-| Entidade | Informação |
-|---|---|
-| Utilizadores | Identificador, email, palavra-passe protegida e perfil |
-| Tickets | Identificador, título, descrição, categoria, autor, data, estado, técnico atribuído e solução |
-| Histórico | Ticket, tipo de alteração, data, utilizador, valores anteriores e novos |
-
-As palavras-passe nunca devem ser guardadas em texto legível.
-
-## 6.4. Funcionamento de uma operação
-
-1. O utilizador executa uma ação no frontend.
-2. O frontend envia o pedido ao backend.
-3. O backend verifica a autenticação e as permissões.
-4. O backend valida as regras de negócio.
-5. O backend consulta ou atualiza a base de dados.
-6. O resultado é devolvido ao frontend.
-
-**Exemplo:** quando Sofia reatribui um ticket, o backend verifica que o ticket não está Fechado, atualiza o técnico responsável sem alterar o estado e regista a operação no histórico.
-
-## 6.5. Decisões técnicas iniciais
-
-| Aspeto | Decisão | Justificação |
+| Componente | Responsabilidade | Exemplo |
 |---|---|---|
-| Arquitetura | Três camadas | Separação simples de responsabilidades |
-| Frontend | Aplicação web | Acesso pelo Chrome e Edge |
-| Backend | Aplicação única e modular | Evitar complexidade desnecessária |
-| Comunicação | API HTTP/JSON sobre HTTPS | Comunicação estruturada e segura |
-| Base de dados | Relacional | Adequada às relações entre utilizadores, tickets e histórico |
-| Autenticação | Email e palavra-passe próprios | Conforme o MVP aprovado |
-| Execução inicial | Ambiente local | Facilita desenvolvimento e demonstração |
+| Frontend | Apresentar páginas, formulários e informação. | Ana preenche o formulário de um novo ticket. |
+| Backend | Receber pedidos, validar dados e aplicar permissões e regras de negócio. | Verificar que apenas Sofia pode fechar um ticket. |
+| Base de dados | Guardar informação necessária ao funcionamento. | Conservar o estado, categoria e técnico responsável. |
 
-Não serão utilizados microserviços, Kubernetes ou componentes distribuídos no MVP.
+O frontend pode apresentar as ações permitidas, mas **é o backend que deve fazer cumprir as permissões**, mesmo que alguém tente realizar uma operação diretamente.
 
-## 6.6. Limites e evolução
+## 3. Tecnologias propostas
 
-Esta arquitetura suporta:
+| Camada | Tecnologia | Justificação |
+|---|---|---|
+| Frontend | HTML, CSS e templates simples | Interface web sem necessidade de uma framework JavaScript complexa. |
+| Backend | Python com FastAPI | Organização das operações e validação de pedidos. |
+| Base de dados | SQLite | Não exige um servidor de base de dados separado. |
 
-- Os três perfis aprovados.
-- As três categorias de tickets.
-- Os quatro estados.
-- Atribuição e reatribuição de técnicos.
-- Autenticação e permissões.
-- Histórico e persistência.
+Na primeira versão, o frontend e o backend podem executar-se na mesma aplicação, embora mantenham responsabilidades distintas. Não se propõem React, Kubernetes, microsserviços, filas ou infraestrutura cloud: não são necessários para demonstrar o MVP.
 
-A escolha concreta das linguagens, frameworks, base de dados e ferramentas de execução será justificada antes da implementação.
+## 4. Informação essencial a guardar
 
-Os testes e a respetiva rastreabilidade estão documentados em `docs/qualidade/01_testes_e_rastreabilidade.md`.
+| Entidade | Dados principais |
+|---|---|
+| Utilizador | Identificador, nome, email, credencial de autenticação protegida e perfil. |
+| Ticket | Identificador, título, descrição, categoria, estado e colaborador criador. |
+| Atribuição | Técnico atualmente responsável pelo ticket. |
+| Resolução | Descrição da solução aplicada pelo técnico. |
+
+As palavras-passe não devem ser guardadas em texto simples. O mecanismo concreto de proteção será definido na implementação.
+
+## 5. Exemplo de funcionamento
+
+1. O frontend apresenta o formulário de novo ticket a Ana.
+2. Ana introduz título, descrição e categoria **Equipamento**.
+3. O backend valida a autenticação e os campos obrigatórios.
+4. A base de dados guarda o ticket no estado **Aberto**.
+5. O frontend apresenta o ticket criado.
+
+O mesmo princípio aplica-se às operações de Miguel e Sofia.
+
+## 6. Regras e limites
+
+- **Perfis:** colaborador (Ana Martins), técnico (Miguel Costa) e responsável de TI (Sofia Almeida).
+- **Categorias:** Equipamento, Software e Acessos.
+- **Estados:** Aberto, Em tratamento, Resolvido e Fechado.
+- Sofia pode atribuir e reatribuir tickets, incluindo os que estão Em tratamento.
+- Ana pode comunicar que um problema persiste, fazendo o ticket regressar de Resolvido a Em tratamento.
+- Apenas Sofia pode fechar tickets Resolvidos, após confirmação da resolução.
+- Um ticket Fechado não pode ser reaberto.
+- O objetivo de resposta até **3 segundos** é provisório e carece de medição em condições definidas.
+- A compatibilidade será verificada no Chrome e no Edge, em computador.
+
+**Fora do MVP:** aplicação móvel, SMS, integração automática com email, resolução por IA e SLA avançado.
+
+**Não definidos nesta etapa:** Docker, redes internas, volumes, PostgreSQL, CI/CD e cloud. Poderão ser abordados posteriormente sem alterar os requisitos de negócio.
+
+**Referências internas:** [Requisitos e User Stories](../produto/02_requisitos_e_user_stories.md), [MVP e backlog](../produto/03_mvp_backlog_e_aceitacao.md), [Testes e rastreabilidade](../qualidade/01_testes_e_rastreabilidade.md).

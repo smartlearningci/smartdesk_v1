@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block content %}
+<a href="/tickets">Voltar à lista</a><h2>Ticket #{{ ticket.id }} — {{ ticket.title }}</h2>
+<dl><dt>Descrição</dt><dd>{{ ticket.description }}</dd>
+<dt>Categoria</dt><dd>{{ ticket.category }}</dd><dt>Estado</dt><dd>{{ ticket.state }}</dd>
+<dt>Técnico (ID)</dt><dd>{{ ticket.technician_id or "Por atribuir" }}</dd>
+<dt>Solução</dt><dd>{{ ticket.resolution or "Ainda não registada" }}</dd></dl>
+{% set url = "/api/tickets/" ~ ticket.id %}
+{% if user.role == "responsavel" and ticket.state in ("Aberto","Em tratamento") %}
+<form action="{{ url }}/assign" method="post"><label>Técnico
+<select name="technician_id" required>{% for tech in technicians %}
+<option value="{{ tech.id }}" {% if ticket.technician_id == tech.id %}selected{% endif %}>{{ tech.name }}</option>
+{% endfor %}</select></label><button>Atribuir / reatribuir</button></form>{% endif %}
+{% if user.role == "tecnico" and ticket.technician_id == user.id %}
+{% if ticket.state == "Aberto" %}<form action="{{ url }}/start" method="post"><button>Iniciar tratamento</button></form>{% endif %}
+{% if ticket.state == "Em tratamento" %}<form action="{{ url }}/resolve" method="post">
+<label>Solução<textarea name="resolution" required></textarea></label><button>Registar resolução</button></form>{% endif %}
+{% endif %}
+{% if user.role == "colaborador" and ticket.creator_id == user.id and ticket.state == "Resolvido" %}
+<form action="{{ url }}/return" method="post"><button>O problema persiste</button></form>{% endif %}
+{% if user.role == "responsavel" and ticket.state == "Resolvido" %}
+<form action="{{ url }}/close" method="post"><label><input name="confirmed" type="checkbox" value="true" required> Verifiquei a resolução</label>
+<button>Fechar ticket</button></form>{% endif %}
+{% endblock %}

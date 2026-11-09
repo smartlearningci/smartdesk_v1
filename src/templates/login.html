@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block content %}
+<h2>Iniciar sessão</h2>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form action="/login" method="post">
+<label>Email<input name="email" type="email" required autocomplete="username"></label>
+<label>Palavra-passe<input name="password" type="password" required autocomplete="current-password"></label>
+<button>Entrar</button></form>{% endblock %}

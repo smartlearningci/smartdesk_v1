@@ -1,130 +1,90 @@
-# 5. MVP, Backlog e Critérios de Aceitação do SmartDesk
+# Passo 5 — MVP, backlog e critérios de aceitação
 
-## 5.1. Objetivo
+**Estado:** Proposta aprovada.
 
-Definir uma primeira versão pequena e demonstrável do SmartDesk, baseada nos requisitos e User Stories aprovados. O MVP acompanha um pedido desde a autenticação até ao fecho, incluindo a possibilidade de reatribuição.
+## 1. MVP proposto
 
-## 5.2. Definição do MVP
+O MVP SmartDesk permite demonstrar um percurso completo de suporte informático:
 
-Aplicação web interna para Google Chrome e Microsoft Edge, com três perfis: Colaborador (Ana Martins), Técnico de suporte (Miguel Costa) e Responsável de TI (Sofia Almeida).
+1. **Ana** inicia sessão e cria um ticket de impressora na categoria **Equipamento** — estado **Aberto**.
+2. **Sofia** consulta o pedido e atribui-o a **Miguel** — estado **Aberto**.
+3. **Miguel** consulta o ticket e inicia o tratamento — estado **Em tratamento**.
+4. **Miguel** regista a solução — estado **Resolvido**.
+5. **Sofia** verifica e confirma a resolução e fecha o ticket, sem confirmação formal obrigatória de Ana — estado **Fechado**.
 
-O MVP permite autenticar e terminar sessão; aplicar permissões; criar e consultar tickets; atribuir e reatribuir técnicos; iniciar, resolver e retomar tratamento; fechar tickets Resolvidos; consultar estados, resoluções e históricos; e preservar dados entre sessões.
+**Percurso alternativo:** se Ana comunicar que o problema persiste, um ticket **Resolvido** regressa a **Em tratamento**, mantendo o técnico responsável, salvo reatribuição por Sofia.
 
-## 5.3. Backlog priorizado
+O percurso é pequeno e demonstrável, mas cobre o ciclo de vida essencial do SmartDesk.
 
-P0: essencial para a primeira demonstração. P1: necessário para completar o MVP. P2: fora do MVP. P0 e P1 entram ambos no MVP.
+## 2. Backlog por prioridade
 
-| Ordem | ID | Funcionalidade | Prioridade | Entrega |
-|---|---|---|---|---|
-| 1 | US-011 | Autenticação e fim de sessão | P0 | MVP |
-| 2 | US-001 | Criar ticket | P0 | MVP |
-| 3 | US-003 | Consultar todos os tickets | P0 | MVP |
-| 4 | US-004 | Atribuir ticket | P0 | MVP |
-| 5 | US-005 | Consultar tickets atribuídos | P0 | MVP |
-| 6 | US-006 | Iniciar tratamento | P0 | MVP |
-| 7 | US-007 | Registar resolução | P0 | MVP |
-| 8 | US-009 | Fechar ticket | P0 | MVP |
-| 9 | US-002 | Consultar os próprios tickets | P1 | MVP |
-| 10 | US-008 | Retomar tratamento | P1 | MVP |
-| 11 | US-010 | Consultar histórico | P1 | MVP |
-| 12 | US-012 | Reatribuir técnico | P1 | MVP |
+- **P0 — Essencial:** necessário para demonstrar o percurso completo.
+- **P1 — Complementar:** necessário para cumprir o MVP aprovado, embora não seja indispensável à primeira demonstração.
+- **P2 — Posterior:** melhorias para depois da primeira versão demonstrável.
 
-## 5.4. O que entra no MVP
+| Prioridade | US | Funcionalidade | Decisão |
+|---|---|---|---|
+| P0 | US-001 | Autenticação por email e palavra-passe, com três perfis | MVP |
+| P0 | US-002 | Criar ticket com título, descrição e categoria | MVP |
+| P0 | US-003 | Ana consultar os seus tickets | MVP |
+| P0 | US-004 | Sofia atribuir tickets aos técnicos | MVP |
+| P0 | US-005 | Miguel consultar os tickets atribuídos | MVP |
+| P0 | US-006 | Miguel iniciar tratamento | MVP |
+| P0 | US-007 | Miguel registar resolução | MVP |
+| P0 | US-009 | Sofia acompanhar e fechar tickets | MVP |
+| P1 | US-008 | Ana comunicar problema persistente e devolver ticket a Em tratamento | MVP |
+| P1 | US-010 | Validação de campos obrigatórios e mensagens claras | MVP |
+| P1 | US-011 | Consulta de tickets com resposta até 3 segundos | MVP |
+| P1 | US-012 | Funcionamento no Chrome e Edge | MVP |
 
-| Funcionalidade | Requisitos associados |
+**Nota:** A reatribuição de tickets prevista na US-004 faz parte do MVP, mesmo não sendo necessária ao percurso principal. P0 e P1 indicam a ordem de trabalho, não exclusões do MVP nem prioridades dos tickets. Não existe campo de prioridade por ticket no MVP.
+
+## 3. Incluído no MVP e evolução posterior
+
+**Incluído:** autenticação; criação e consulta de tickets; atribuição e reatribuição; tratamento e resolução; regresso ao tratamento; supervisão e fecho; validações dos campos obrigatórios (título, descrição e categoria); permissões; compatibilidade Chrome/Edge; meta provisória de resposta até 3 segundos.
+
+**Fora do MVP:** aplicação móvel, notificações SMS, integração automática com email, resolução automática por IA e gestão avançada de SLA. Estas funcionalidades não serão especificadas nem implementadas nesta fase.
+
+**Perfis:** colaborador (Ana Martins), técnico de suporte (Miguel Costa), responsável de TI (Sofia Almeida).
+
+**Categorias:** Equipamento, Software e Acessos.
+
+**Estados:** Aberto, Em tratamento, Resolvido e Fechado.
+
+## 4. Critérios de aceitação em Gherkin
+
+O ficheiro [`features/tickets.feature`](../../features/tickets.feature) contém os **12 cenários principais**, um por User Story (US-001 a US-012), revistos para o MVP. A simplificação substitui os 16 cenários anteriores, mantendo os identificadores.
+
+A reatribuição, o fecho exclusivo por Sofia e a proibição de reabrir tickets fechados continuam a ser regras obrigatórias, mesmo sem cenários negativos independentes nesta versão simplificada.
+
+## 5. Regras de negócio obrigatórias
+
+| Regra | Comportamento esperado |
 |---|---|
-| Autenticação por email e palavra-passe | RF-001, RNF-003 |
-| Permissões por perfil | RF-001 a RF-004, RNF-003 |
-| Criação de tickets | RF-002, RF-005 a RF-007 |
-| Consulta de tickets | RF-002 a RF-004, RF-014, RF-016 |
-| Atribuição e reatribuição | RF-004, RF-008, RF-015 |
-| Tratamento e resolução | RF-009 a RF-011 |
-| Fecho de tickets | RF-012, RF-013 |
-| Histórico | RF-015 |
-| Persistência | RNF-004 |
-| Mensagens de erro | RNF-005 |
-| Compatibilidade Chrome e Edge | RNF-001 |
-| Clareza da interface | RNF-002 |
+| Perfis | Colaborador, técnico e responsável de TI têm permissões distintas. |
+| Categorias | Apenas Equipamento, Software e Acessos. |
+| Estados | Aberto, Em tratamento, Resolvido e Fechado. |
+| Reatribuição | Sofia pode reatribuir tickets, incluindo os que estão Em tratamento. |
+| Regresso ao tratamento | Ana pode devolver um ticket Resolvido a Em tratamento. |
+| Fecho | Apenas Sofia pode fechar um ticket Resolvido, após verificar a resolução, sem confirmação formal obrigatória de Ana. |
+| Ticket fechado | Não pode ser reaberto. |
 
-## 5.5. O que fica para depois
+Estas regras devem continuar a ser verificadas na fase de testes.
 
-Não fazem parte da primeira versão: aplicação móvel, notificações SMS, integração com email, resolução automática com IA, gestão complexa de SLA, recuperação automática de palavra-passe, autenticação multifator e integração com serviços externos de identidade.
+## 6. Critério de conclusão do MVP
 
-## 5.6. Cenários principais de aceitação
+O MVP estará demonstrável quando:
 
-Um cenário principal por User Story. A versão Gherkin integral encontra-se em `features/tickets.feature`.
+- Ana conseguir iniciar sessão, criar um ticket e acompanhar o seu estado.
+- Sofia conseguir atribuir e reatribuir tickets.
+- Miguel conseguir consultar, tratar e resolver os tickets atribuídos.
+- Ana conseguir comunicar que uma resolução não funcionou.
+- Sofia conseguir supervisionar e fechar um ticket resolvido.
+- As permissões, categorias, estados e regras de transição forem respeitados.
+- Os critérios de usabilidade, desempenho e compatibilidade forem verificados.
 
-| User Story | Dado | Quando | Então |
-|---|---|---|---|
-| US-001 | Ana autenticada como Colaborador | Cria ticket com campos obrigatórios | Ticket criado com identificador e estado Aberto |
-| US-002 | Ana tem tickets registados | Consulta os seus pedidos | Visualiza apenas os seus tickets, estados e resoluções |
-| US-003 | Sofia autenticada como Responsável de TI | Consulta tickets | Visualiza todos e pode consultar por técnico e estado |
-| US-004 | Ticket Aberto | Sofia atribui a Miguel | Miguel fica responsável e o estado permanece Aberto |
-| US-005 | Miguel tem tickets atribuídos | Consulta a sua lista | Visualiza tickets atualmente atribuídos |
-| US-006 | Miguel tem ticket Aberto atribuído | Inicia tratamento | Estado Em tratamento, alteração registada |
-| US-007 | Miguel tem ticket Em tratamento atribuído | Regista solução | Estado Resolvido, solução guardada |
-| US-008 | Miguel tem ticket Resolvido atribuído | Retoma tratamento | Estado Em tratamento, alteração registada |
-| US-009 | Sofia consulta ticket Resolvido | Fecha ticket | Estado Fechado |
-| US-010 | Sofia consulta ticket com histórico | Abre histórico | Visualiza alterações, datas e utilizadores |
-| US-011 | Ana tem conta ativa | Introduz credenciais válidas | Acede às funcionalidades de Colaborador |
-| US-012 | Ticket não fechado atribuído a Miguel | Sofia reatribui | Novo técnico responsável, estado mantido e alteração registada |
+**Nota:** O objetivo de até 3 segundos é provisório e requer medição em condições previamente definidas. A compatibilidade exige verificação no Chrome e no Edge.
 
-## 5.7. Regras obrigatórias de aceitação
+## 7. Rastreabilidade
 
-| Regra | Requisitos | Cenários |
-|---|---|---|
-| Credenciais inválidas impedem acesso | RF-001, RNF-003 | RT-019 |
-| Fim de sessão impede operações autenticadas | RF-001 | RT-020 |
-| Perfis e permissões | RF-001 a RF-004, RNF-003 | RT-003, RT-005, RT-006, RT-016 |
-| Categorias e campos obrigatórios | RF-005, RF-006 | RT-007, RT-008, RT-017 |
-| Transições permitidas e proibidas | RF-009 a RF-013 | RT-001 a RT-004, RT-009, RT-010, RT-018 |
-| Reatribuição em estados permitidos | RF-008 | RT-021, RT-022 |
-| Técnico anterior perde permissões | RF-003, RF-008 | RT-023 |
-| Histórico e persistência | RF-015, RNF-004 | RT-014 |
-| Consulta por técnico e estado | RF-016 | RT-011 |
-| Chrome e Edge | RNF-001 | RT-012 |
-| Interface clara | RNF-002 | RT-013 |
-| Mensagens de erro | RNF-005 | RT-008, RT-015, RT-017, RT-019 |
-
-## 5.8. Matriz de rastreabilidade do MVP
-
-| Requisito | User Stories | Prioridade | MVP |
-|---|---|---|---|
-| RF-001 | US-011 | P0 | Sim |
-| RF-002 | US-001, US-002 | P0/P1 | Sim |
-| RF-003 | US-005, US-006, US-007 | P0 | Sim |
-| RF-004 | US-003, US-004, US-012 | P0/P1 | Sim |
-| RF-005 | US-001 | P0 | Sim |
-| RF-006 | US-001 | P0 | Sim |
-| RF-007 | US-001 | P0 | Sim |
-| RF-008 | US-004, US-012 | P0/P1 | Sim |
-| RF-009 | US-006 | P0 | Sim |
-| RF-010 | US-007 | P0 | Sim |
-| RF-011 | US-008 | P1 | Sim |
-| RF-012 | US-009 | P0 | Sim |
-| RF-013 | US-009 e regras transversais | P0 | Sim |
-| RF-014 | US-002 | P1 | Sim |
-| RF-015 | US-010, US-012 | P1 | Sim |
-| RF-016 | US-003 | P0 | Sim |
-| RNF-001 | Transversal | P0 | Sim |
-| RNF-002 | Transversal | P1 | Sim |
-| RNF-003 | US-011 e transversal | P0 | Sim |
-| RNF-004 | Transversal | P0 | Sim |
-| RNF-005 | Transversal | P0 | Sim |
-
-## 5.9. Condições para considerar o MVP concluído
-
-1. Os três perfis conseguem autenticar-se e terminar sessão.
-2. As permissões são respeitadas.
-3. É possível criar, atribuir, tratar, resolver e fechar um ticket.
-4. É possível retomar um ticket Resolvido.
-5. É possível reatribuir um ticket não fechado.
-6. A reatribuição não altera o estado e retira ao técnico anterior as permissões de tratamento.
-7. O histórico regista alterações de estado e de técnico.
-8. Os dados persistem após nova sessão.
-9. Os 12 cenários principais e as regras obrigatórias são validados.
-10. A aplicação funciona no Google Chrome e Microsoft Edge.
-
-## 5.10. Justificação das escolhas
-
-A autenticação identifica o utilizador e permite aplicar permissões. O ciclo de criação, atribuição, tratamento, resolução e fecho é o percurso mínimo demonstrável. A reatribuição demonstra a redistribuição do trabalho. A consulta e o histórico permitem acompanhar os pedidos e responsabilidades. As funcionalidades P1 completam o âmbito aprovado após a primeira demonstração. Não são introduzidas novas personas, categorias ou estados.
+O MVP mantém as 12 User Stories e os requisitos RF-001 a RF-009 e RNF-001 a RNF-004 aprovados no [Passo 4](02_requisitos_e_user_stories.md). Cada cenário em `features/tickets.feature` identifica a sua User Story. Não foram acrescentadas novas personas nem funcionalidades.

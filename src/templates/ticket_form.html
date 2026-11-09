@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block content %}
+<h2>Criar ticket</h2>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form action="/tickets/new" method="post">
+<label>Título<input name="title" required value="{{ title_value or '' }}"></label>
+<label>Descrição<textarea name="description" required>{{ description_value or '' }}</textarea></label>
+<label>Categoria<select name="category" required><option value="">Escolher</option>
+{% for category in categories %}<option value="{{ category }}" {% if category_value == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+</select></label><button>Criar ticket</button></form>{% endblock %}
