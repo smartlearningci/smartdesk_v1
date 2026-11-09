@@ -1,0 +1,71 @@
+# SmartDesk existente: uma replica; PostgreSQL permanece no Compose.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartdesk
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smartdesk
+  template:
+    metadata:
+      labels:
+        app: smartdesk
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: smartdesk
+          image: docker.io/library/smartdesk:k3s-lab
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: smartdesk-db
+                  key: DATABASE_URL
+            - name: SMARTDESK_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: smartdesk-db
+                  key: SMARTDESK_SESSION_SECRET
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartdesk
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: smartdesk
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
