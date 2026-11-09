@@ -1,6 +1,6 @@
 # Estado da implementação e evidências de teste
 
-**Âmbito:** MVP SmartDesk aprovado, sem alteração de requisitos, User Stories ou Gherkin.
+**Âmbito:** MVP SmartDesk aprovado, sem alteração de requisitos, User Stories, código da aplicação ou cenários Gherkin.
 
 ## Implementação
 
@@ -9,28 +9,89 @@
 - Regras de negócio: `src/services.py`.
 - Autenticação e sessões: `src/auth.py`.
 - Persistência SQLite: `src/database.py`.
-- Testes: `tests/test_auth.py`, `test_permissions.py`, `test_ticket_rules.py`, `test_api.py` e `test_bdd.py`.
+- Testes: `tests/`; execução por Docker Compose em serviço `tests`.
+- Relatórios: pasta partilhada `reports/`, com JUnit XML, HTML e JSON global.
 
-## Registo de execução
+## Procedimento da demonstração local
 
-| Categoria | Estado | Evidência |
-|---|---|---|
-| Testes unitários de regras e permissões | Criados; execução por verificar | `tests/test_ticket_rules.py`, `tests/test_permissions.py` |
-| Testes HTTP e autenticação | Criados; execução por verificar | `tests/test_api.py`, `tests/test_auth.py` |
-| BDD — 12 cenários aprovados | Passos ainda não automatizados | `features/tickets.feature` |
-| T-11 — tempo de resposta | Não executado | Requer condições de medição |
-| T-12 — Chrome e Edge | Não executado | Requer ensaio em ambos os navegadores |
-
-**Teste criado** significa código de verificação existente; **teste executado** exige registo de execução; **teste aprovado** exige resultado obtido conforme ao esperado. A existência de um ficheiro ou de uma asserção não comprova aprovação.
-
-## Comando de execução
+Na pasta do projeto:
 
 ```bash
-pytest -v
+cp .env.example .env
+docker compose build
+docker compose run --rm -it app python -m scripts.create_demo_users
+docker compose up -d
 ```
 
-Registar data, ambiente, total de testes recolhidos, aprovados, falhados, ignorados e não executados após cada execução. Não interpretar a presença dos identificadores US no ficheiro BDD como execução dos cenários.
+O ficheiro `.env.example` contém uma chave **fictícia exclusivamente para formação local**.
+O script pede palavras-passe de pelo menos oito caracteres para as contas
+`ana@nexaserv.test`, `miguel@nexaserv.test` e `sofia@nexaserv.test`.
+Abrir `http://localhost:8080/login` e iniciar sessão com as credenciais escolhidas.
 
-## Limitações
+Para parar sem eliminar o volume SQLite:
 
-Falta executar e avaliar a suíte, automatizar os passos BDD em português, medir RNF-002 e verificar Chrome/Edge. A aplicação não está preparada para exposição pública (proteção CSRF e HTTPS/cookies seguros pendentes).
+```bash
+docker compose down
+```
+
+## Execução de testes e relatórios
+
+```bash
+mkdir -p reports
+docker compose build tests
+docker compose run --rm tests
+```
+
+Em Linux, se necessário para permissões de escrita na pasta partilhada:
+
+```bash
+LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" docker compose run --rm tests
+```
+
+Abrir `reports/relatorio_global.html`. O ficheiro `relatorio_global.json`
+regista os resultados por conjunto. A base SQLite usada pelos testes é isolada
+dos dados da demonstração.
+
+## Evidência recebida — 9 de novembro de 2026
+
+**Fonte:** ficheiro `relatorio_global.json` fornecido após a sessão,
+gerado em `2026-11-09T15:26:03.848422+00:00`.
+
+| Conjunto pytest | Aprovados | Falhados | Erros | Ignorados | Código de saída |
+|---|---:|---:|---:|---:|---:|
+| Unitários/regras | 12 | 0 | 0 | 0 | 0 |
+| Integração HTTP | 5 | 0 | 0 | 0 | 0 |
+| Verificação de identificadores BDD | 1 | 0 | 0 | 0 | 0 |
+| **Total** | **18** | **0** | **0** | **0** | — |
+
+**Validado pelo relatório:** 18 casos pytest concluíram com sucesso. O caso
+`test_bdd.py` confirma identificadores de User Stories no ficheiro Gherkin,
+**não** executa os passos Dado/Quando/Então.
+
+**Sem evidência autónoma recebida:** sucesso do build Docker, criação das contas,
+login manual, navegação e demonstração funcional no browser. Os comandos estão
+documentados, mas o JSON não comprova essas ações.
+
+## Aceitação e limitações
+
+- **T-01 a T-20:** todos constam como `not-run` na matriz de aceitação do
+  relatório, por não haver evidência individual integral consolidada. Isto
+  **não anula** os 18 resultados pytest aprovados, que verificam partes dos
+  requisitos.
+- **Cenários Gherkin US-001 a US-012:** `not-run`; passos não automatizados.
+- **T-11 / RNF-002:** medição de desempenho não executada.
+- **T-12 / RNF-004:** ensaios reais em Chrome e Edge não executados.
+- **Falhas observadas no pytest:** nenhuma reportada nos 18 casos executados.
+  Não foram fornecidos registos de eventuais problemas da demonstração manual.
+- **Segurança:** aplicação de formação local; formulários sem proteção CSRF
+  e cookies sem HTTPS obrigatório. Não expor à Internet.
+
+**Critério de reporte:** um teste só é considerado aprovado quando existe
+resultado da sua execução. Ausência de evidência não equivale a aprovação.
+
+## Próximos passos da formação
+
+1. Registar, se disponíveis, evidências da demonstração manual e eventuais falhas.
+2. Prosseguir com Docker, orquestração e CI/CD, reutilizando o MVP existente.
+3. Numa etapa posterior, automatizar os passos BDD e preparar a medição T-11 e
+   os ensaios T-12, sem alterar os requisitos aprovados.
