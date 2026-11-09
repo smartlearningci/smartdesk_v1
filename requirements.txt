@@ -4,3 +4,5 @@ python-multipart>=0.0.9,<1
 itsdangerous>=2.2,<3
 pytest>=8,<10
 httpx>=0.27,<1
+# Templates HTML usados por Jinja2Templates no src/main.py.
+jinja2>=3.1,<4

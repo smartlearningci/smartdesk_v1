@@ -1,0 +1,19 @@
+# Um único serviço web; SQLite está dentro da aplicação, não noutro contentor.
+services:
+  app:
+    build: .
+    # Só o próprio computador pode aceder à porta publicada.
+    ports:
+      - "127.0.0.1:8080:8000"
+    environment:
+      # A base de dados fica fora do sistema de ficheiros descartável do contentor.
+      SMARTDESK_DB: /data/smartdesk.sqlite3
+      # Compose lê o segredo do .env local; nunca o escrever neste ficheiro.
+      SMARTDESK_SESSION_SECRET: ${SMARTDESK_SESSION_SECRET:?Defina SMARTDESK_SESSION_SECRET no ficheiro .env}
+    volumes:
+      - smartdesk_data:/data
+    restart: unless-stopped
+
+# Este volume mantém os dados quando o contentor é recriado.
+volumes:
+  smartdesk_data:

@@ -1,0 +1,19 @@
+# Evitar transportar o historial Git e metadados locais para a imagem.
+.git/
+.gitignore
+
+# Ambientes e caches Python dos formandos.
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Nunca colocar segredos ou bases de dados locais na imagem.
+.env
+.env.*
+*.sqlite3
+*.sqlite3-*
+data/

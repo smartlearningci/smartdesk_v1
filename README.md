@@ -24,11 +24,82 @@ Projeto pedagógico da NexaServ (60 colaboradores, equipa de TI com três técni
 | `tests/` | Testes automatizados |
 | `docs/` e `features/` | Especificação e Gherkin aprovados |
 
-## Preparar e executar (Ubuntu/Linux, Python 3.11+)
+## Execução com Docker Compose (ensaio de formação)
+
+Esta é a forma recomendada de executar o **smartdesk_v1** na sessão. Requer Git e Docker com Docker Compose. **Não é necessário instalar Python ou pacotes localmente.** Há apenas um serviço web `app`; os dados SQLite ficam num volume gerido por Docker.
+
+### 1. Obter o projeto
 
 ```bash
-git clone https://github.com/smartlearningci/smartdesk.git
-cd smartdesk
+git clone https://github.com/smartlearningci/smartdesk_v1.git
+cd smartdesk_v1
+```
+
+### 2. Definir a chave de sessão local
+
+O segredo **não está no código, no GitHub ou na imagem**. No terminal Bash (Linux/macOS), gerar uma chave aleatória usando Python dentro de um contentor e criar o ficheiro ignorado `.env`:
+
+```bash
+printf 'SMARTDESK_SESSION_SECRET=%s\n' "$(docker run --rm python:3.12-slim python -c 'import secrets; print(secrets.token_urlsafe(48))')" > .env
+```
+
+Não partilhar o ficheiro `.env` nem usar um segredo fixo. O Compose exige a variável `SMARTDESK_SESSION_SECRET` antes de iniciar o serviço.
+
+### 3. Construir a imagem e criar contas locais
+
+```bash
+docker compose build
+docker compose run --rm app python -m scripts.create_demo_users
+```
+
+O script pede interativamente as palavras-passe das três contas de ensaio. A base de dados é criada no volume `smartdesk_data` e permanece nas execuções seguintes. Utilizadores: `ana@nexaserv.test`, `miguel@nexaserv.test` e `sofia@nexaserv.test`. Não existem palavras-passe publicadas.
+
+### 4. Arrancar e consultar
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs -f app
+```
+
+Abrir **http://localhost:8080/login** (ou `http://127.0.0.1:8080/login`). O Compose publica **apenas** `127.0.0.1:8080` no computador, encaminhando para a porta 8000 do contentor.
+
+O endpoint técnico `GET /health` devolve `{"status":"ok"}` quando a aplicação responde. Não verifica a base de dados e não substitui os testes de desempenho T-11/RNF-002.
+
+Para sair da apresentação contínua dos logs, usar `Ctrl+C` (não pára o serviço).
+
+### 5. Testar, parar e recomeçar
+
+```bash
+# Testes de autenticação, permissões, negócio, API e health; sem instalação local
+docker compose run --rm app pytest -v
+
+# Parar e remover o contentor e a rede, preservando o volume SQLite
+docker compose down
+
+# Recomeçar, conservando os tickets e utilizadores
+docker compose up -d
+```
+
+**Atenção:** `docker compose down -v` também elimina o volume e **todos os dados SQLite de ensaio**. Só usar se pretender reiniciar a demonstração do zero.
+
+### Ficheiros de infraestrutura
+
+| Ficheiro | Função |
+|---|---|
+| `Dockerfile` | Define imagem Python 3.12-slim, bibliotecas, utilizador sem privilégios e arranque `uvicorn src.main:app` |
+| `compose.yaml` | Orquestra um único serviço, porta local, segredo por variável de ambiente e volume SQLite |
+| `.dockerignore` | Exclui `.env`, bases locais, caches e ambientes do contexto da imagem |
+| `.gitignore` | Impede o versionamento de segredos, bases e ambientes locais |
+| `requirements.txt` | Declara as bibliotecas Python, incluindo Jinja2 para templates HTML |
+
+**Limites:** ambiente local de formação; não publicar portas na rede nem expor à Internet. Os formulários continuam sem proteção CSRF e o cookie de sessão não exige HTTPS. O teste de `/health` está em `tests/test_health.py` e complementa, sem substituir, os testes RF/RNF já existentes.
+
+## Execução sem Docker (alternativa histórica: Ubuntu/Linux, Python 3.11+)
+
+```bash
+git clone https://github.com/smartlearningci/smartdesk_v1.git
+cd smartdesk_v1
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
