@@ -1,32 +1,48 @@
-# Serviço principal: aplicação web SmartDesk e base SQLite persistente.
+# V2: PostgreSQL e aplicação inteiramente locais, ligados pela rede default Compose.
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartdesk}
+      POSTGRES_USER: ${POSTGRES_USER:-smartdesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Só é executado quando o volume é inicializado pela primeira vez.
+      - ./docker/01_create_test_db.sh:/docker-entrypoint-initdb.d/01_create_test_db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
   app:
     build: .
     ports:
       - "127.0.0.1:8080:8000"
     environment:
-      SMARTDESK_DB: /data/smartdesk.sqlite3
-      SMARTDESK_SESSION_SECRET: ${SMARTDESK_SESSION_SECRET:?Defina SMARTDESK_SESSION_SECRET no ficheiro .env}
-    volumes:
-      - smartdesk_data:/data
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartdesk}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-smartdesk}
+      SMARTDESK_SESSION_SECRET: ${SMARTDESK_SESSION_SECRET:?Defina SMARTDESK_SESSION_SECRET no .env}
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
-  # Serviço de testes: usa a mesma imagem, sem publicar portas e sem tocar na BD da demo.
-  # docker compose run --rm tests
   tests:
     build: .
     profiles: ["test"]
-    # Valor fictício apenas para a importação da aplicação nos testes.
     environment:
-      SMARTDESK_SESSION_SECRET: "smartdesk-testes-locais-chave-com-32-caracteres"
-    # Pasta do computador partilhada para guardar XML, HTML e JSON.
-    # Criar antes com: mkdir -p reports
+      # Base separada da demonstração. Nunca testar com a BD principal.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartdesk}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/smartdesk_test
+      SMARTDESK_SESSION_SECRET: smartdesk-testes-locais-chave-com-32-caracteres
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - ./reports:/app/reports
-    # Permite escrever os relatórios como o utilizador do computador (Linux).
-    # Em Windows/macOS, os valores predefinidos são suficientes na maioria dos casos.
     user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
     command: ["python", "-m", "scripts.run_tests"]
 
 volumes:
-  smartdesk_data:
+  postgres_data:
