@@ -35,15 +35,15 @@ git clone https://github.com/smartlearningci/smartdesk_v1.git
 cd smartdesk_v1
 ```
 
-### 2. Definir a chave de sessão local
+### 2. Preparar a configuração local
 
-O segredo **não está no código, no GitHub ou na imagem**. No terminal Bash (Linux/macOS), gerar uma chave aleatória usando Python dentro de um contentor e criar o ficheiro ignorado `.env`:
+Para a formação, copiar o ficheiro de exemplo (a chave fictícia tem mais de 32 caracteres e destina-se **apenas a ensaio local**):
 
 ```bash
-printf 'SMARTDESK_SESSION_SECRET=%s\n' "$(docker run --rm python:3.12-slim python -c 'import secrets; print(secrets.token_urlsafe(48))')" > .env
+cp .env.example .env
 ```
 
-Não partilhar o ficheiro `.env` nem usar um segredo fixo. O Compose exige a variável `SMARTDESK_SESSION_SECRET` antes de iniciar o serviço.
+O ficheiro `.env` é ignorado pelo Git e não entra na imagem. Em produção seria necessária uma chave exclusiva e segura.
 
 ### 3. Construir a imagem e criar contas locais
 
