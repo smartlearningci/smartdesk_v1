@@ -68,11 +68,35 @@ O endpoint técnico `GET /health` devolve `{"status":"ok"}` quando a aplicação
 
 Para sair da apresentação contínua dos logs, usar `Ctrl+C` (não pára o serviço).
 
-### 5. Testar, parar e recomeçar
+### 5. Executar os testes e guardar os relatórios no computador
+
+O serviço `tests` usa a mesma imagem Python, mas executa os testes com uma base SQLite temporária. **Não altera os utilizadores nem os tickets da demonstração.** Os relatórios são guardados numa pasta partilhada entre o contentor e o computador.
+
+```bash
+# Criar a pasta partilhada no computador
+mkdir -p reports
+
+# Construir a imagem de testes e executar os conjuntos
+# (não é necessário instalar Python no computador)
+docker compose build tests
+docker compose run --rm tests
+```
+
+Abrir `reports/relatorio_global.html` no navegador. Existem ainda `unitarios.html`, `http.html`, `bdd.html`, os correspondentes ficheiros JUnit XML e `relatorio_global.json`. Verde = aprovado; vermelho = falha/erro; amarelo = ignorado; cinzento = não executado.
+
+Em Linux, se o teu utilizador não tiver UID/GID 1000, executar assim para garantir permissões de escrita na pasta partilhada:
+
+```bash
+LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" docker compose run --rm tests
+```
+
+**Limitação:** o conjunto BDD só verifica a presença dos identificadores US-001 a US-012, não executa os passos Gherkin. T-11 (desempenho) e T-12 (Chrome/Edge) continuam não executados. A matriz T-01 a T-20 não é marcada como aprovada apenas por existirem casos pytest aprovados. Ver [documentação detalhada da validação](docs/qualidade/03_validacao_automatizada.md).
+
+### 6. Parar e recomeçar
 
 ```bash
 # Testes de autenticação, permissões, negócio, API e health; sem instalação local
-docker compose run --rm app pytest -v
+docker compose run --rm tests
 
 # Parar e remover o contentor e a rede, preservando o volume SQLite
 docker compose down
@@ -88,10 +112,12 @@ docker compose up -d
 | Ficheiro | Função |
 |---|---|
 | `Dockerfile` | Define imagem Python 3.12-slim, bibliotecas, utilizador sem privilégios e arranque `uvicorn src.main:app` |
-| `compose.yaml` | Orquestra um único serviço, porta local, segredo por variável de ambiente e volume SQLite |
+| `compose.yaml` | Orquestra a aplicação web e um serviço opcional de testes, com pasta `./reports` partilhada |
 | `.dockerignore` | Exclui `.env`, bases locais, caches e ambientes do contexto da imagem |
 | `.gitignore` | Impede o versionamento de segredos, bases e ambientes locais |
 | `requirements.txt` | Declara as bibliotecas Python, incluindo Jinja2 para templates HTML |
+| `scripts/run_tests.py` | Executa os conjuntos pytest e gera JUnit XML, HTML e resumo global |
+| `reports/` | Resultados gerados no computador; ignorados pelo Git e pela imagem |
 
 **Limites:** ambiente local de formação; não publicar portas na rede nem expor à Internet. Os formulários continuam sem proteção CSRF e o cookie de sessão não exige HTTPS. O teste de `/health` está em `tests/test_health.py` e complementa, sem substituir, os testes RF/RNF já existentes.
 
