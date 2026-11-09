@@ -18,6 +18,7 @@ SUITES = {
     "unitarios": ["tests/test_ticket_rules.py", "tests/test_permissions.py", "tests/test_mvp.py"],
     "http": ["tests/test_api.py", "tests/test_auth.py", "tests/test_health.py"],
     "bdd": ["tests/test_bdd.py"],
+    "postgres": ["tests/test_postgres.py"],
 }
 # Identificadores efetivamente relacionados com testes pytest existentes.
 # Uma associação NÃO comprova cobertura integral do teste T documentado.
@@ -25,6 +26,7 @@ REFERENCES = {
     "unitarios": "T-02 a T-10, T-14 a T-20 (cobertura parcial por caso)",
     "http": "T-01 a T-04, T-06 a T-10, T-13 e /health (parcial)",
     "bdd": "Rastreabilidade US-001 a US-012; passos BDD NÃO executados",
+    "postgres": "RF-001..RF-008; US-001..US-009; integração PostgreSQL, não reinício Docker",
 }
 CSS = """body{font:15px system-ui,sans-serif;max-width:1100px;margin:2rem auto;padding:0 1rem;color:#20252b}
 table{border-collapse:collapse;width:100%;margin:1rem 0}td,th{padding:.65rem;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
