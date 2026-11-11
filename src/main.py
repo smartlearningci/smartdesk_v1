@@ -12,6 +12,7 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+from .demo_seed import seed_demo_users
 from .database import connect, initialize
 from .auth import verify, current
 from . import services
@@ -25,6 +26,10 @@ def create_app(path=None, secret=None):
     async def lifespan(app):
         with connect(path) as db:
             initialize(db)
+            if path is None and os.getenv("SMARTDESK_SEED_DEMO_USERS") == "1":
+                password = os.getenv("SMARTDESK_DEMO_PASSWORD", "")
+                created = seed_demo_users(db, password)
+                print(f"SmartDesk: {created} contas de demonstração criadas")
         yield
 
     key = secret or os.getenv("SMARTDESK_SESSION_SECRET")
