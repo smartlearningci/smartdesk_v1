@@ -54,11 +54,6 @@ def create_app(path=None, secret=None):
         response.status_code = exc.status_code
         return response
 
-    # Verificação técnica HTTP: sem acesso a dados nem credenciais.
-    @app.get("/health")
-    def health():
-        return {"status": "ok"}
-
     @app.get("/")
     def home():
         return RedirectResponse("/tickets", status_code=303)

@@ -1,12 +1,11 @@
+# Ficheiros locais que nunca devem ser publicados.
 __pycache__/
 .pytest_cache/
 .venv/
 *.pyc
 *.sqlite3
+*.db
 .env
-# Configuração local, dados e relatórios Docker.
-.env.*
-!.env.example
-*.sqlite3-*
-data/
+.coverage
+htmlcov/
 reports/

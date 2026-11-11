@@ -1,230 +1,132 @@
-> **Versão atual: V2 PostgreSQL.** Para preparar o ambiente, seguir a secção [SmartDesk V2 — PostgreSQL local](#smartdesk-v2--postgresql-local). As instruções SQLite abaixo são históricas.
-
 # SmartDesk — Sistema de Gestão de Pedidos de Suporte
 
-Projeto pedagógico da NexaServ (60 colaboradores, equipa de TI com três técnicos e uma responsável). O MVP transforma a [especificação aprovada](docs/produto/03_mvp_backlog_e_aceitacao.md) numa aplicação local com **Python, FastAPI, HTML e SQLite**.
+Projeto pedagógico da NexaServ: aplicação FastAPI, HTML simples e PostgreSQL local. Nesta sessão utiliza-se **Docker e Docker Compose**; não é necessário instalar Python, FastAPI ou PostgreSQL no computador.
 
-## Funcionalidades e regras
+A [especificação aprovada](docs/produto/03_mvp_backlog_e_aceitacao.md), os [testes e a rastreabilidade](docs/qualidade/01_testes_e_rastreabilidade.md) e os [cenários Gherkin](features/tickets.feature) permanecem como referência.
 
-- Ana (colaboradora) cria e consulta os próprios tickets; pode comunicar que um ticket Resolvido continua com problema.
-- Miguel (técnico) consulta tickets atribuídos, inicia tratamento e regista soluções.
-- Sofia (responsável de TI) consulta todos, atribui e reatribui técnicos e fecha tickets Resolvidos após verificar a resolução, sem confirmação formal obrigatória de Ana.
-- Estados: **Aberto → Em tratamento → Resolvido → Fechado**. Um ticket Resolvido pode regressar a Em tratamento; Fechado não pode ser reaberto.
-- Categorias: **Equipamento, Software, Acessos**. Campos obrigatórios: título, descrição e categoria.
+## Funcionalidades do MVP
 
-## Estrutura
+- **Ana**, colaboradora: cria e consulta os próprios tickets; comunica quando um problema Resolvido persiste.
+- **Miguel**, técnico: consulta tickets atribuídos, inicia o tratamento e regista a resolução.
+- **Sofia**, responsável de TI: consulta todos os tickets, atribui ou reatribui técnicos e fecha os Resolvidos depois de verificar a solução (sem confirmação formal obrigatória de Ana).
+- Estados: **Aberto → Em tratamento → Resolvido → Fechado**; **Resolvido → Em tratamento** é permitido; **Fechado** não reabre.
+- Categorias: **Equipamento, Software, Acessos**. Título, descrição e categoria são obrigatórios.
 
-| Caminho | Responsabilidade |
-|---|---|
-| `src/main.py` | Rotas HTTP, formulários e apresentação de erros |
-| `src/services.py` | Regras de estados, validações e permissões |
-| `src/auth.py` | Autenticação e perfis |
-| `src/database.py` | Ligação e esquema SQLite |
-| `src/templates/` | Interface HTML |
-| `src/static/style.css` | Estilos |
-| `scripts/create_demo_users.py` | Contas fictícias locais |
-| `tests/` | Testes automatizados |
-| `docs/` e `features/` | Especificação e Gherkin aprovados |
+## Preparar e executar — apenas Docker Compose
 
-## Execução com Docker Compose (ensaio de formação)
+**Pré-requisito:** Docker com Docker Compose disponível e a funcionar (contentores Linux). Os comandos seguintes são executados na pasta do projeto. Não é necessário Python local.
 
-Esta é a forma recomendada de executar o **smartdesk_v1** na sessão. Requer Git e Docker com Docker Compose. **Não é necessário instalar Python ou pacotes localmente.** Há apenas um serviço web `app`; os dados SQLite ficam num volume gerido por Docker.
-
-### 1. Obter o projeto
+### 1. Obter o repositório
 
 ```bash
-git clone https://github.com/smartlearningci/smartdesk_v1.git
-cd smartdesk_v1
+git clone https://github.com/smartlearningci/smartdesk.git
+cd smartdesk
 ```
+
+Se já tiver o repositório clonado, entre na pasta e execute `git pull`.
 
 ### 2. Preparar a configuração local
 
-Para a formação, copiar o ficheiro de exemplo (a chave fictícia tem mais de 32 caracteres e destina-se **apenas a ensaio local**):
-
 ```bash
 cp .env.example .env
 ```
 
-O ficheiro `.env` é ignorado pelo Git e não entra na imagem. Em produção seria necessária uma chave exclusiva e segura.
+O exemplo inclui credenciais PostgreSQL fictícias e uma **chave de sessão fictícia** com mais de 32 caracteres. Edite a palavra-passe PostgreSQL no `.env` antes de iniciar. Não é necessário gerar outra chave para esta demonstração local. A chave `SMARTDESK_SESSION_SECRET` serve para assinar os cookies da aplicação; **não é uma palavra-passe de utilizador**. O ficheiro `.env` é ignorado pelo Git e pelo build Docker.
 
-### 3. Construir a imagem e criar contas locais
+### 3. Construir a imagem
 
 ```bash
 docker compose build
-docker compose run --rm app python -m scripts.create_demo_users
 ```
 
-O script pede interativamente as palavras-passe das três contas de ensaio. A base de dados é criada no volume `smartdesk_data` e permanece nas execuções seguintes. Utilizadores: `ana@nexaserv.test`, `miguel@nexaserv.test` e `sofia@nexaserv.test`. Não existem palavras-passe publicadas.
+O `Dockerfile` instala as dependências Python **dentro da imagem**, incluindo Jinja2 para os templates HTML.
 
-### 4. Arrancar e consultar
+### 4. Criar os utilizadores de demonstração dentro do Docker
 
-```bash
-docker compose up -d
-docker compose ps
-docker compose logs -f app
-```
-
-Abrir **http://localhost:8080/login** (ou `http://127.0.0.1:8080/login`). O Compose publica **apenas** `127.0.0.1:8080` no computador, encaminhando para a porta 8000 do contentor.
-
-O endpoint técnico `GET /health` devolve `{"status":"ok"}` quando a aplicação responde. Não verifica a base de dados e não substitui os testes de desempenho T-11/RNF-002.
-
-Para sair da apresentação contínua dos logs, usar `Ctrl+C` (não pára o serviço).
-
-### 5. Executar os testes e guardar os relatórios no computador
-
-O serviço `tests` usa a mesma imagem Python, mas executa os testes com uma base SQLite temporária. **Não altera os utilizadores nem os tickets da demonstração.** Os relatórios são guardados numa pasta partilhada entre o contentor e o computador.
+**Executar antes do primeiro login:**
 
 ```bash
-# Criar a pasta partilhada no computador
-mkdir -p reports
-
-# Construir a imagem de testes e executar os conjuntos
-# (não é necessário instalar Python no computador)
-docker compose build tests
-docker compose run --rm tests
-```
-
-Abrir `reports/relatorio_global.html` no navegador. Existem ainda `unitarios.html`, `http.html`, `bdd.html`, os correspondentes ficheiros JUnit XML e `relatorio_global.json`. Verde = aprovado; vermelho = falha/erro; amarelo = ignorado; cinzento = não executado.
-
-Em Linux, se o teu utilizador não tiver UID/GID 1000, executar assim para garantir permissões de escrita na pasta partilhada:
-
-```bash
-LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" docker compose run --rm tests
-```
-
-**Limitação:** o conjunto BDD só verifica a presença dos identificadores US-001 a US-012, não executa os passos Gherkin. T-11 (desempenho) e T-12 (Chrome/Edge) continuam não executados. A matriz T-01 a T-20 não é marcada como aprovada apenas por existirem casos pytest aprovados. Ver [documentação detalhada da validação](docs/qualidade/03_validacao_automatizada.md).
-
-### 6. Parar e recomeçar
-
-```bash
-# Testes de autenticação, permissões, negócio, API e health; sem instalação local
-docker compose run --rm tests
-
-# Parar e remover o contentor e a rede, preservando o volume SQLite
-docker compose down
-
-# Recomeçar, conservando os tickets e utilizadores
-docker compose up -d
-```
-
-**Atenção:** `docker compose down -v` também elimina o volume e **todos os dados SQLite de ensaio**. Só usar se pretender reiniciar a demonstração do zero.
-
-### Ficheiros de infraestrutura
-
-| Ficheiro | Função |
-|---|---|
-| `Dockerfile` | Define imagem Python 3.12-slim, bibliotecas, utilizador sem privilégios e arranque `uvicorn src.main:app` |
-| `compose.yaml` | Orquestra a aplicação web e um serviço opcional de testes, com pasta `./reports` partilhada |
-| `.dockerignore` | Exclui `.env`, bases locais, caches e ambientes do contexto da imagem |
-| `.gitignore` | Impede o versionamento de segredos, bases e ambientes locais |
-| `requirements.txt` | Declara as bibliotecas Python, incluindo Jinja2 para templates HTML |
-| `scripts/run_tests.py` | Executa os conjuntos pytest e gera JUnit XML, HTML e resumo global |
-| `reports/` | Resultados gerados no computador; ignorados pelo Git e pela imagem |
-
-**Limites:** ambiente local de formação; não publicar portas na rede nem expor à Internet. Os formulários continuam sem proteção CSRF e o cookie de sessão não exige HTTPS. O teste de `/health` está em `tests/test_health.py` e complementa, sem substituir, os testes RF/RNF já existentes.
-
-## Execução sem Docker (alternativa histórica: Ubuntu/Linux, Python 3.11+)
-
-```bash
-git clone https://github.com/smartlearningci/smartdesk_v1.git
-cd smartdesk_v1
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-export SMARTDESK_SESSION_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
-python -m scripts.create_demo_users
-uvicorn src.main:app --reload
-```
-
-Abrir **http://127.0.0.1:8000/login**. Contas fictícias: `ana@nexaserv.test`, `miguel@nexaserv.test`, `sofia@nexaserv.test`. O script solicita as palavras-passe; não existem palavras-passe de demonstração publicadas. A base de dados `smartdesk.sqlite3` é local e ignorada pelo Git.
-
-## Testes
-
-```bash
-pytest -v
-```
-
-Os testes têm objetivos e referências RF/US/T nos respetivos ficheiros. Cobrem regras de negócio, autenticação, permissões e percursos HTTP. **Não existe evidência de execução dos testes nesta publicação.** O teste `test_bdd.py` verifica os identificadores dos 12 cenários, mas **não executa os passos BDD**. Permanecem por validar a execução BDD completa, o tempo de resposta (T-11/RNF-002) e os navegadores Chrome/Edge (T-12/RNF-004). A documentação aprovada continua em [docs/](docs/) e [features/tickets.feature](features/tickets.feature).
-
-## Limitações e próximos passos
-
-Esta aplicação destina-se a uma demonstração **local**, não a produção. Os formulários não dispõem ainda de proteção CSRF e o cookie de sessão não está configurado para HTTPS obrigatório; **não expor à Internet**. As condições de medição de desempenho serão definidas antes do T-11.
-
-Depois da validação integral, a formação prosseguirá para Docker, Compose, CI/CD e cloud, sem acrescentar funcionalidades de negócio ao MVP.
-
-
-## SmartDesk V2 — PostgreSQL local
-
-A V2 utiliza PostgreSQL no serviço `db` do Docker Compose e um volume
-persistente `postgres_data`. A interface, a API e as regras mantêm-se.
-As instruções SQLite anteriores descrevem a V1 histórica.
-
-### Atualizar a pasta local
-
-```bash
-cd smartdesk_v1
-git pull --ff-only origin main
-```
-
-### Configurar e arrancar pela primeira vez
-
-```bash
-cp .env.example .env
-# Editar .env: substituir POSTGRES_PASSWORD e SMARTDESK_SESSION_SECRET.
-mkdir -p reports
-docker compose build
 docker compose up -d db
-docker compose run --rm -it app python -m scripts.create_demo_users
-docker compose up -d app
-docker compose ps
+docker compose run --rm web python -m scripts.create_demo_users
 ```
 
-O script solicita palavras-passe (mínimo oito caracteres) para Ana,
-Miguel e Sofia. O PostgreSQL guarda utilizadores e tickets no volume
-`postgres_data`. O `db` não publica portas no computador.
-Abrir `http://localhost:8080/login`.
+O script solicita interativamente uma palavra-passe para cada conta. Escolha uma palavra-passe simples **com pelo menos oito caracteres**, apenas para o laboratório. O terminal não apresenta os caracteres enquanto escreve; prima Enter após cada palavra-passe. Pode usar a mesma palavra-passe nas três contas de teste, se preferir, mas não utilize palavras-passe reais.
 
-### Testes e relatórios
+| Perfil | Email de login |
+|---|---|
+| Ana Martins — colaboradora | `ana@nexaserv.test` |
+| Miguel Costa — técnico | `miguel@nexaserv.test` |
+| Sofia Almeida — responsável TI | `sofia@nexaserv.test` |
 
-```bash
-docker compose run --rm tests
-```
+As palavras-passe de login são guardadas como hashes na base de dados PostgreSQL do volume Docker, **não** no `.env`, no `Dockerfile` ou no GitHub. Se as contas já existirem, o script não as recria.
 
-Em Linux, se o utilizador local não tiver UID/GID 1000:
-
-```bash
-LOCAL_UID="$(id -u)" LOCAL_GID="$(id -g)" docker compose run --rm tests
-```
-
-Abrir `reports/relatorio_global.html`. O conjunto `postgres` verifica
-criação, leitura, atualização e persistência entre ligações, usando
-exclusivamente a base `smartdesk_test`. Os conjuntos antigos continuam
-a usar SQLite temporário, para regressão. Os passos Gherkin, T-11 e T-12
-continuam pendentes de ensaio específico.
-
-### Verificar persistência após reinício
-
-Criar um ticket pela interface e anotar o ID. Depois:
+### 5. Iniciar a aplicação
 
 ```bash
-docker compose restart app db
-docker compose ps
-```
-
-Voltar a iniciar sessão e verificar que o ticket mantém o estado.
-O ensaio deve ser registado manualmente; não é validado automaticamente
-pela suíte PostgreSQL.
-
-### Parar e voltar a arrancar
-
-```bash
-docker compose down
 docker compose up -d
 ```
 
-`docker compose down` conserva o volume e os tickets.
-**Não usar `docker compose down -v`**, pois elimina os dados persistentes.
+Abrir **http://localhost:8080/login**. A porta está publicada apenas em `127.0.0.1:8080`, pelo que o acesso se destina ao próprio computador.
 
-O volume SQLite `smartdesk_data` anterior não é eliminado.
-Não há migração automática dos tickets da V1 para PostgreSQL.
-Ver `docs/arquitetura/02_postgresql_compose.md`.
+### 6. Consultar logs
+
+```bash
+docker compose logs -f web
+```
+
+Prima Ctrl+C para sair da visualização dos logs sem parar a aplicação.
+
+### 7. Executar os testes dentro do Docker
+
+```bash
+docker compose run --rm --no-deps web python -m scripts.run_validation
+```
+
+O comando executa separadamente testes unitários, integração HTTP, cenários Gherkin e integração PostgreSQL com `pytest-bdd`, gerando `reports/index.html` e ficheiros JUnit XML/HTML por conjunto. **A existência dos testes não significa que tenham sido executados ou aprovados.** T-11 (desempenho) e T-12 (Chrome/Edge) permanecem explicitamente ignorados até à validação real. Consulte `docs/qualidade/03_plano_validacao.md` para condições iniciais, ações e resultados esperados.
+
+### 8. Parar
+
+```bash
+docker compose down
+```
+
+Este comando remove os contentores e a rede, mas **preserva o volume** `smartdesk_data` com os utilizadores e tickets. Não use `docker compose down -v` se quiser manter os dados.
+
+## Ficheiros e responsabilidades
+
+| Caminho | Função |
+|---|---|
+| `Dockerfile` | Imagem Python 3.12-slim, dependências e arranque Uvicorn |
+| `compose.yaml` | Serviço `web`, porta local 8080 e volume PostgreSQL |
+| `.dockerignore` | Exclui ficheiros locais e segredos do contexto de build |
+| `.env.example` | Chave de sessão fictícia, pronta a copiar |
+| `requirements.txt` | Dependências Python, incluindo Jinja2 |
+| `src/main.py` | Interface HTTP e rotas FastAPI |
+| `src/services.py` | Regras de negócio e permissões |
+| `src/auth.py` | Autenticação e hashes de palavras-passe |
+| `src/database.py` | Ligação PostgreSQL por `DATABASE_URL`; SQLite apenas em testes isolados |
+| `src/templates/`, `src/static/` | Interface HTML e CSS |
+| `scripts/create_demo_users.py` | Criação interativa de contas fictícias |
+| `tests/` | Testes unitários, integração e BDD |
+| `scripts/run_validation.py` | Executa os conjuntos e gera relatórios JUnit/HTML |
+| `scripts/generate_report.py` | Consolida os resultados sem considerar não executados como aprovados |
+| `reports/` | Resultados locais, excluídos do Git |
+| `docs/`, `features/` | Requisitos, critérios e cenários aprovados |
+
+## Limites da demonstração
+
+Um único serviço web, sem novos endpoints ou funcionalidades de negócio. A base PostgreSQL é persistida no volume `postgres_data` do Docker. O volume SQLite anterior não é importado automaticamente. Não foi acrescentado `/health` porque ainda não foi aprovado. A aplicação **não está preparada para exposição pública**: faltam proteção CSRF e configuração HTTPS/cookies seguros. A chave de sessão de exemplo é deliberadamente fictícia e exclusiva deste laboratório.
+
+**Validação:** estes comandos são o procedimento previsto; a publicação do código, por si só, não comprova que Docker ou os testes tenham sido executados.
+
+## Balanço da demonstração local
+
+A sessão de demonstração local foi dada como terminada, mas **não foram fornecidos logs, relatórios de testes ou resultados observados**. Assim, não é possível afirmar que o arranque, o login ou qualquer teste tenha passado. Os procedimentos acima são instruções de execução, não evidência de sucesso.
+
+**Falhas observadas:** nenhuma foi comunicada; isto não significa ausência de falhas. **Limitações conhecidas:** T-11 exige medição real de desempenho; T-12 exige Chrome e Edge reais; a aplicação não está preparada para exposição pública (CSRF/HTTPS).
+
+**Próximos passos da formação:** recolher e analisar os relatórios reais (`reports/index.html` e JUnit XML), corrigir eventuais falhas comprovadas e prosseguir para as etapas de CI/CD e cloud sem alterar o MVP aprovado. Consultar [estado da validação](docs/qualidade/02_estado_implementacao.md).
+
+## Evolução V2 — PostgreSQL
+
+A base operacional utiliza o serviço `db` (PostgreSQL 16), acessível apenas na rede interna Compose. O serviço `web` aguarda o healthcheck de `db`. O esquema `users`/`tickets` é inicializado sem apagar registos. O volume `postgres_data` preserva utilizadores e tickets entre reinícios. Os testes SQLite antigos mantêm-se isolados, e os testes PostgreSQL utilizam esquemas temporários. Consulte [a arquitetura PostgreSQL](docs/arquitetura/04_persistencia_postgresql.md). **Não foi executada nem comprovada a migração dos dados SQLite anteriores.**

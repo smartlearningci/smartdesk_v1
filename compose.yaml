@@ -1,48 +1,36 @@
-# V2: PostgreSQL e aplicação inteiramente locais, ligados pela rede default Compose.
+# SmartDesk local: aplicação e PostgreSQL, sem exposição da base de dados.
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:16-alpine
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-smartdesk}
-      POSTGRES_USER: ${POSTGRES_USER:-smartdesk}
+      POSTGRES_DB: ${POSTGRES_DB:?Defina POSTGRES_DB no .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Só é executado quando o volume é inicializado pela primeira vez.
-      - ./docker/01_create_test_db.sh:/docker-entrypoint-initdb.d/01_create_test_db.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 3s
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
       timeout: 3s
-      retries: 20
+      retries: 15
     restart: unless-stopped
 
-  app:
+  web:
     build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:?}
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8080:8000"
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-smartdesk}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-smartdesk}
-      SMARTDESK_SESSION_SECRET: ${SMARTDESK_SESSION_SECRET:?Defina SMARTDESK_SESSION_SECRET no .env}
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
-
-  tests:
-    build: .
-    profiles: ["test"]
-    environment:
-      # Base separada da demonstração. Nunca testar com a BD principal.
-      DATABASE_URL: postgresql://${POSTGRES_USER:-smartdesk}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}@db:5432/smartdesk_test
-      SMARTDESK_SESSION_SECRET: smartdesk-testes-locais-chave-com-32-caracteres
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./reports:/app/reports
-    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
-    command: ["python", "-m", "scripts.run_tests"]
+    restart: unless-stopped
 
 volumes:
   postgres_data:
