@@ -24,4 +24,5 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'reports/ci.xml'
         }
     }
+    
 }
