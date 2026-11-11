@@ -24,7 +24,7 @@ pipeline {
 
         stage('Construir imagem') {
             steps {
-                sh 'docker build -t smartlearningci/smartdesk:${BUILD_NUMBER} .'
+                sh 'docker build -t smartlearningci/smartdesk:latest .'
             }
         }
 
@@ -38,7 +38,7 @@ pipeline {
                     sh '''
                         set +x
                         printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                        docker push smartlearningci/smartdesk:${BUILD_NUMBER}
+                        docker push smartlearningci/smartdesk:latest
                         docker logout
                     '''
                 }
