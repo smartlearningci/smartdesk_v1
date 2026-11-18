@@ -19,8 +19,8 @@ A [especificação aprovada](docs/produto/03_mvp_backlog_e_aceitacao.md), os [te
 ### 1. Obter o repositório
 
 ```bash
-git clone https://github.com/smartlearningci/smartdesk.git
-cd smartdesk
+git clone https://github.com/smartlearningci/smartdesk_v1.git
+cd smartdesk_v1
 ```
 
 Se já tiver o repositório clonado, entre na pasta e execute `git pull`.
@@ -31,7 +31,11 @@ Se já tiver o repositório clonado, entre na pasta e execute `git pull`.
 cp .env.example .env
 ```
 
-O exemplo inclui credenciais PostgreSQL fictícias e uma **chave de sessão fictícia** com mais de 32 caracteres. Edite a palavra-passe PostgreSQL no `.env` antes de iniciar. Não é necessário gerar outra chave para esta demonstração local. A chave `SMARTDESK_SESSION_SECRET` serve para assinar os cookies da aplicação; **não é uma palavra-passe de utilizador**. O ficheiro `.env` é ignorado pelo Git e pelo build Docker.
+No **Windows PowerShell**, o comando equivalente é `Copy-Item .env.example .env`. Confirme que o ficheiro `.env.example` existe na raiz antes de copiar.
+
+O exemplo contém `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` e `SMARTDESK_SESSION_SECRET`, com valores **exclusivamente fictícios** para laboratório. Edite as credenciais de demonstração no `.env` antes de iniciar. A chave de sessão assina os cookies da aplicação; **não é uma palavra-passe de utilizador**. O ficheiro `.env` é ignorado pelo Git e pelo build Docker.
+
+O mesmo exemplo inclui `OLLAMA_URL=http://ollama-primeit:11434` e `OLLAMA_MODEL=gemma3:270m` para o **Notebook 18**. Essas duas variáveis são utilizadas na demonstração independente `compose.ia.yaml` apresentada nesse notebook; o SmartDesk original continua a funcionar sem Ollama. **Não definir `DATABASE_URL` manualmente:** o `compose.yaml` gera-o com o hostname `db` da rede Docker.
 
 ### 3. Construir a imagem
 
@@ -99,7 +103,7 @@ Este comando remove os contentores e a rede, mas **preserva o volume** `smartdes
 | `Dockerfile` | Imagem Python 3.12-slim, dependências e arranque Uvicorn |
 | `compose.yaml` | Serviço `web`, porta local 8080 e volume PostgreSQL |
 | `.dockerignore` | Exclui ficheiros locais e segredos do contexto de build |
-| `.env.example` | Chave de sessão fictícia, pronta a copiar |
+| `.env.example` | Credenciais fictícias de PostgreSQL, chave de sessão e parâmetros locais do Ollama para o Notebook 18 |
 | `requirements.txt` | Dependências Python, incluindo Jinja2 |
 | `src/main.py` | Interface HTTP e rotas FastAPI |
 | `src/services.py` | Regras de negócio e permissões |
